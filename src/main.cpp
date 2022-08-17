@@ -19,6 +19,7 @@ double beta = 2.3;
 int MAX_ITER = 20, iter_count;
 int Naccept = 0, Nreject = 0;
 int l = 8, lt = 8, lsites = l * l * l * lt;
+int ldir[4] = {lt, l, l, l};
 std::complex<double> I(0.0, 1.0);
 double rot_size = 0.5;
 typedef struct link
@@ -210,6 +211,7 @@ int coordinatesToSiteIndex(int t, int x, int y, int z)
     site_index = site_index * l + x;
     site_index = site_index * l + y;
     site_index = site_index * l + z;
+
     return site_index;
 }
 
@@ -229,8 +231,8 @@ double plaquette(int site_index, int mu, int nu)
     int x[4];
     siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
     int y[4] = {x[0], x[1], x[2], x[3]}, z[4] = {x[0], x[1], x[2], x[3]};
-    y[mu] = (x[mu] + 1) % l;
-    z[nu] = (x[nu] + 1) % l;
+    y[mu] = (x[mu] + 1) % ldir[mu];
+    z[nu] = (x[nu] + 1) % ldir[nu];
     matrix temp = lattice[site_index].field[mu];
 
     temp *= lattice[coordinatesToSiteIndex(y[0], y[1], y[2], y[3])].field[nu];
@@ -265,27 +267,27 @@ double rectangle(int site_index, int mu, int nu, int mu_len, int nu_len)
     // bottom
     for (int i = 0; i < mu_len; i++)
     {
-        y[mu] = (x[mu] + i + l) % l;
+        y[mu] = (x[mu] + i + ldir[mu]) % ldir[mu];
         forward *= lattice[coordinatesToSiteIndex(y[0], y[1], y[2], y[3])].field[mu];
     }
-    y[mu] = (x[mu] + mu_len + l) % l;
+    y[mu] = (x[mu] + mu_len + ldir[mu]) % ldir[mu];
     // right
     for (int i = 0; i < nu_len; i++)
     {
-        y[nu] = (x[nu] + i + l) % l;
+        y[nu] = (x[nu] + i + ldir[nu]) % ldir[nu];
         forward *= lattice[coordinatesToSiteIndex(y[0], y[1], y[2], y[3])].field[nu];
     }
     // left
     for (int i = 0; i < nu_len; i++)
     {
-        z[nu] = (x[nu] + i + l) % l;
+        z[nu] = (x[nu] + i + ldir[nu]) % ldir[nu];
         backward *= lattice[coordinatesToSiteIndex(z[0], z[1], z[2], z[3])].field[nu];
     }
-    z[nu] = (x[nu] + nu_len + l) % l;
+    z[nu] = (x[nu] + nu_len + ldir[nu]) % ldir[nu];
     // top
     for (int i = 0; i < mu_len; i++)
     {
-        z[mu] = (x[mu] + i + l) % l;
+        z[mu] = (x[mu] + i + ldir[mu]) % ldir[mu];
         backward *= lattice[coordinatesToSiteIndex(z[0], z[1], z[2], z[3])].field[mu];
     }
 
@@ -314,9 +316,9 @@ double polyakovLine(int site_index)
     int x[4];
     siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
     matrix temp = matrix::Identity();
-    for (int i = 0; i < l; i++)
+    for (int i = 0; i < lt; i++)
     {
-        x[0] = (x[0] + 1 + l) % l;
+        x[0] = (x[0] + 1 + lt) % lt;
         temp = temp * lattice[coordinatesToSiteIndex(x[i], x[1], x[2], x[3])].field[0];
     }
     return 0.5 * temp.trace().real();
@@ -328,7 +330,7 @@ double polyakovLine(int site_index, int dir)
     matrix temp = matrix::Identity();
     for (int i = 0; i < l; i++)
     {
-        x[dir] = (x[dir] + 1 + l) % l;
+        x[dir] = (x[dir] + 1 + ldir[dir]) % ldir[dir];
         temp = temp * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[dir];
     }
     return 0.5 * temp.trace().real();
@@ -337,9 +339,9 @@ void polyakovLines(std::string filename, int dir1, int dir2)
 {
     int x[4] = {0};
     std::ofstream file(filename, std::ios_base::app);
-    for (int i = 0; i < l; i++)
+    for (int i = 0; i < ldir[dir1]; i++)
     {
-        for (int j = 0; j < l; j++)
+        for (int j = 0; j < ldir[dir2]; j++)
         {
             x[dir1] = i;
             x[dir2] = j;
@@ -353,7 +355,7 @@ void polyakovLinesAbs(std::string filename)
     int x[4] = {0};
     std::ofstream file(filename, std::ios_base::app);
     std::vector<double> abs;
-    abs.reserve(4 * l * l * l);
+    abs.reserve(4 * l * l * lt);
     for (int dir = 0; dir < 4; dir++)
     {
         int dir1, dir2, dir3;
@@ -361,11 +363,11 @@ void polyakovLinesAbs(std::string filename)
         dir2 = (dir + 2) % 4;
         dir3 = (dir + 3) % 4;
         x[dir] = 0;
-        for (int i = 0; i < l; i++)
+        for (int i = 0; i < ldir[dir1]; i++)
         {
-            for (int j = 0; j < l; j++)
+            for (int j = 0; j < ldir[dir2]; j++)
             {
-                for (int k = 0; k < l; k++)
+                for (int k = 0; k < ldir[dir3]; k++)
                 {
                     x[dir1] = i;
                     x[dir2] = j;
@@ -375,7 +377,7 @@ void polyakovLinesAbs(std::string filename)
             }
         }
     }
-    if (abs.size() != 4 * l * l * l)
+    if (abs.size() != 4 * l * l * lt)
         std::cout << "Wrong number of lines.\n";
     file << std::accumulate(abs.begin(), abs.end(), 0.0) / abs.size() << std::endl;
     file.close();
@@ -404,7 +406,7 @@ double actionPartial(int site_index, int mu)
             continue;
         int x[4];
         siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-        x[nu] = (x[nu] - 1 + l) % l;
+        x[nu] = (x[nu] - 1 + ldir[nu]) % ldir[nu];
         accumulator += plaquette(site_index, mu, nu);
         accumulator += plaquette(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), mu, nu);
     }
