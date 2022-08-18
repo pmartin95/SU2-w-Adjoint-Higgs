@@ -12,9 +12,9 @@ FLAGS=-lm -fopenmp -O4# -ggdb3 -pg
 
 all: bin/main.out
 
-bin/main.out: $(OBJS) $(DEP)
+bin/main: $(OBJS) $(DEP)
 	@echo "Linking objects into main.exe..."
-	@$(CC) $(INC) $(FLAGS) -o $(BINDIR)/main.out $(OBJS)
+	@$(CC) $(INC) $(FLAGS) -o $(BINDIR)/main $(OBJS)
 
 obj/%.o : src/%.cpp $(DEP)
 	@echo "Creating $(<:src/%.cpp=%) object file..."
@@ -23,7 +23,7 @@ obj/%.o : src/%.cpp $(DEP)
 .PHONY:clean 
 
 clean:
-	@rm -rf ./obj/*.o *.exe .bin/*.out
+	@rm -rf ./obj/*.o ./bin/*.exe .bin/*.out
 
 .PHONY:run 
 
