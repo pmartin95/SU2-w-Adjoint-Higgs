@@ -319,7 +319,7 @@ double polyakovLine(int site_index)
     for (int i = 0; i < lt; i++)
     {
         x[0] = (x[0] + 1 + lt) % lt;
-        temp = temp * lattice[coordinatesToSiteIndex(x[i], x[1], x[2], x[3])].field[0];
+        temp = temp * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[0];
     }
     return 0.5 * temp.trace().real();
 }
@@ -328,7 +328,7 @@ double polyakovLine(int site_index, int dir)
     int x[4];
     siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
     matrix temp = matrix::Identity();
-    for (int i = 0; i < l; i++)
+    for (int i = 0; i < ldir[dir]; i++)
     {
         x[dir] = (x[dir] + 1 + ldir[dir]) % ldir[dir];
         temp = temp * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[dir];
