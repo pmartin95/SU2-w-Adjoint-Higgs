@@ -16,12 +16,12 @@ enum jackknife
     JACKKNIFE_UNEQUAL_SIZED_DATA
 };
 double beta = 2.3;
-int MAX_ITER = 20, iter_count;
+int MAX_ITER = 1, iter_count;
 int Naccept = 0, Nreject = 0;
 int l = 8, lt = 8, lsites = l * l * l * lt;
 int ldir[4] = {lt, l, l, l};
 std::complex<double> I(0.0, 1.0);
-double rot_size = 0.5;
+double rot_size = 0.4;
 typedef struct link
 {
     matrix field[4];
@@ -56,6 +56,12 @@ int computeJackknifeStatistics(const std::vector<double> &inputData, int setLeng
 
 int main(int argc, char **argv)
 {
+    double input_beta = 2.3;
+    if (argc > 0)
+    {
+        input_beta = atof(argv[1]);
+        std::cout << "Running beta= " << input_beta << std::endl;
+    }
     // Boilerplate
     std::random_device r;
     rng.seed(r());
@@ -91,7 +97,7 @@ int main(int argc, char **argv)
     //         temp += 0.1;
     //     } while (temp < 4.0);
     // }
-    beta_distribution.push_back(3.0);
+    beta_distribution.push_back(input_beta);
 
     for (auto &B : beta_distribution)
     {

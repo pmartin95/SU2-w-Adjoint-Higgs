@@ -10,7 +10,7 @@ DEP=$(wildcard $(DEPDIR)/*.hpp)
 INC=-I$(DEPDIR)/eigen -I$(DEPDIR)
 FLAGS=-lm -fopenmp -O4# -ggdb3 -pg
 
-all: bin/main.out
+all: bin/main
 
 bin/main: $(OBJS) $(DEP)
 	@echo "Linking objects into main.exe..."
@@ -23,7 +23,7 @@ obj/%.o : src/%.cpp $(DEP)
 .PHONY:clean 
 
 clean:
-	@rm -rf ./obj/*.o ./bin/*.exe .bin/*.out
+	@rm -rf ./obj/*.o ./bin/*.exe .bin/*.out bin/main
 
 .PHONY:run 
 

@@ -4,3 +4,5 @@ obj/**
 *.txt
 *.dat
 *.png
+includes/docs/.hgeol
+output/*.out
