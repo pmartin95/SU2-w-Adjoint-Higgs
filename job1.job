@@ -1,3 +1,4 @@
 #!/bin/bash
 load module gcc
-./bin/main > & ./output/main.out & wait
+./bin/main > ./output/main.out
+wait
