@@ -12,6 +12,7 @@
 #include "global_decl.hpp"
 #include "observables.hpp"
 #include "generic_func.hpp"
+#include "metropolis-hastings.hpp"
 
 
 enum jackknife
@@ -47,8 +48,7 @@ int main(int argc, char **argv)
     rng.seed(r());
 
     lattice = new link[lsites];
-    matrix tmp;
-    double actionDiff;
+
 
     // File setup
     int highest_len = 3;
@@ -95,29 +95,7 @@ int main(int argc, char **argv)
         hotLattice();
         for (int i = 0; i < 5000; i++)
         {
-            for (int site_index = 0; site_index < lsites; site_index++)
-            {
-
-                for (int dir = 0; dir < 4; dir++)
-                {
-
-                    actionDiff = actionPartial(site_index, dir);
-                    tmp = lattice[site_index].field[dir];
-                    generateRandomSU2Rot(lattice[site_index].field[dir]);
-                    actionDiff -= actionPartial(site_index, dir);
-                    // actionDiff = -Delta S
-                    actionDiff = std::exp(actionDiff);
-                    if (actionDiff < gen(rng))
-                    {
-                        lattice[site_index].field[dir] = tmp;
-                        ++Nreject;
-                    }
-                    else
-                    {
-                        ++Naccept;
-                    }
-                }
-            }
+            metropolisHastingsSweep();
             polyakovLinesAbs("hotAbsPoly" + std::to_string(beta) + ".txt");
             // std::cout << rectangleAverage(2, 1) << std::endl;
             // std::cout << lattice[5].field[2] << std::endl;
@@ -134,28 +112,7 @@ int main(int argc, char **argv)
             {
                 for (int j = 0; j < 1000; j++)
                 {
-                    for (int site_index = 0; site_index < lsites; site_index++)
-                    {
-
-                        for (int dir = 0; dir < 4; dir++)
-                        {
-                            actionDiff = actionPartial(site_index, dir);
-                            tmp = lattice[site_index].field[dir];
-                            generateRandomSU2Rot(lattice[site_index].field[dir]);
-                            actionDiff -= actionPartial(site_index, dir); // actionDiff = -Delta S
-
-                            actionDiff = std::exp(actionDiff);
-                            if (actionDiff < gen(rng))
-                            {
-                                lattice[site_index].field[dir] = tmp;
-                                ++Nreject;
-                            }
-                            else
-                            {
-                                ++Naccept;
-                            }
-                        }
-                    }
+                    metropolisHastingsSweep();
                     // std::cout << "Acceptance: " << static_cast<double>(Naccept) / static_cast<double>(Naccept + Nreject) << std::endl;
                     Naccept = 0;
                     Nreject = 0;
