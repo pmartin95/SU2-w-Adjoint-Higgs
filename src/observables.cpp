@@ -5,7 +5,7 @@
 #include "observables.hpp"
 #include "global_decl.hpp"
 #include "generic_func.hpp"
-
+#include "lattice_ops.hpp"
 double plaquette(int site_index, int mu, int nu)
 {
     int x[4];
