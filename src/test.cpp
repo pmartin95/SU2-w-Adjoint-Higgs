@@ -23,7 +23,7 @@ void simulation1(int argc, char **argv)
 
         std::cout << "Running beta= " << input_beta << std::endl;
     }
-
+    beta = input_beta;
     // File setup
     int highest_len = 3;
     std::string base_filename = "rect";
@@ -32,8 +32,8 @@ void simulation1(int argc, char **argv)
     std::vector<double> rect2x2observe;
     for (int i = 0; i < highest_len; i++) // Name files and open them
     {
-        MxMfilenames.push_back(base_filename + std::to_string(i + 1) + "x" + std::to_string(i + 1) + ".txt");
-        MxNfilenames.push_back(base_filename + std::to_string(i + 1) + "x" + std::to_string(i) + ".txt");
+        MxMfilenames.push_back(base_filename + std::to_string(i + 1) + "x" + std::to_string(i + 1) + "beta" + std::to_string(input_beta) + ".txt");
+        MxNfilenames.push_back(base_filename + std::to_string(i + 1) + "x" + std::to_string(i) + "beta" + std::to_string(input_beta) + ".txt");
         std::ofstream temp1, temp2;
         temp1.open(MxMfilenames[i], std::ios_base::app);
         temp2.open(MxNfilenames[i], std::ios_base::app);

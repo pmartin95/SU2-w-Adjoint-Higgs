@@ -24,7 +24,7 @@ double beta = 2.3;
 int MAX_ITER = 1;
 int iter_count = 0;
 int Naccept = 0, Nreject = 0;
-int l = 3, lt = 3, lsites = l * l * l * lt;
+int l = 8, lt = 8, lsites = l * l * l * lt;
 int ldir[4] = {lt, l, l, l};
 std::complex<double> I(0.0, 1.0);
 double rot_size = 0.4;
@@ -39,10 +39,12 @@ int main(int argc, char **argv)
     std::random_device r;
     rng.seed(r());
     lattice = new link[lsites];
-    // simulation1(argc,argv);
-    
+    simulation1(argc,argv);
 
-    delete[] lattice;
+
+
+    //free memory
+    // delete[] lattice;
     return 0;
 }
 
