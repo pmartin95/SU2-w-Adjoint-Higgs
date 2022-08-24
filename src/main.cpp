@@ -40,42 +40,9 @@ int main(int argc, char **argv)
     rng.seed(r());
     lattice = new link[lsites];
     // simulation1(argc,argv);
-    hotLattice();
-    link *templattice = new link[lsites];
-    for (int site_index = 0; site_index < lsites; site_index++)
-    {
-        for (int dir = 0; dir < 4; dir++)
-        {
-            templattice[site_index].field[dir] = lattice[site_index].field[dir];
-        }
-    }
-
-    pushConfig("configurations/test_conf.bin");
-    pullConfig("configurations/test_conf.bin");
-    for (int site_index = 0; site_index < lsites; site_index++)
-    {
-        for (int dir = 0; dir < 4; dir++)
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                for (int j = 0; j < 2; j++)
-                {
-                    std::string word1, word2;
-                    word1 = std::to_string(lattice[site_index].field[dir](i, j).real());
-                    word2 = std::to_string(templattice[site_index].field[dir](i, j).real());
-                    if (strcmp(word1.c_str(), word2.c_str()))
-                        std::cout << "halt.\n";
-                    word1 = std::to_string(lattice[site_index].field[dir](i, j).imag());
-                    word2 = std::to_string(templattice[site_index].field[dir](i, j).imag());
-                    if (strcmp(word1.c_str(), word2.c_str()))
-                        std::cout << "halt.\n";
-                }
-            }
-        }
-    }
+    
 
     delete[] lattice;
-    delete[] templattice;
     return 0;
 }
 

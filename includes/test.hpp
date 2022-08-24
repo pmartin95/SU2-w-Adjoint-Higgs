@@ -20,3 +20,4 @@
 #pragma once
 
 void simulation1(int argc, char** argv);
+void confIdentical();
