@@ -41,14 +41,7 @@ void simulation1(int argc, char **argv)
         MxNfiles.push_back(std::move(temp2));
     }
 
-    // Setup Beta distribution 0.0 to 4.0 with 0.1 in between
-    std::vector<double> beta_distribution; // Create beta distribution
-    beta_distribution.push_back(input_beta);
 
-    // Cycle through beta distribution
-    for (auto &B : beta_distribution)
-    {
-        beta = B;
         // Setup data holding vectors
         std::vector<std::vector<double>> MxMdata, MxNdata;
         for (int i = 0; i < highest_len; i++) // Init data holding vectors
@@ -121,7 +114,6 @@ void simulation1(int argc, char **argv)
             MxMfiles[i] << beta << " " << MxMave[i] << " " << MxMerror[i] << "\n";
             MxNfiles[i] << beta << " " << MxNave[i] << " " << MxNerror[i] << "\n";
         }
-    }
 
     delete[] lattice;
     for (auto &file : MxMfiles)
