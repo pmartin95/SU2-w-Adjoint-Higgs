@@ -20,6 +20,7 @@ extern int lsites;
 extern int ldir[4];
 extern std::complex<double> I;
 extern double rot_size;
+extern double step_size_higgs;
 extern std::mt19937 rng;
 extern std::uniform_real_distribution<double> gen;
 extern std::normal_distribution<double> gen_normal;

@@ -1,5 +1,6 @@
 #include "lattice_ops.hpp"
 #include "global_decl.hpp"
+#include "rand.hpp"
 int coordinatesToSiteIndex(int t, int x, int y, int z)
 {
     int site_index = t;
