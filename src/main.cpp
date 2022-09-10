@@ -39,12 +39,16 @@ int main(int argc, char **argv)
     std::random_device r;
     rng.seed(r());
     lattice = new link[lsites];
-    simulation1(argc,argv);
+    // simulation1(argc,argv);
+    hotLattice();
 
-
-
-    //free memory
-    // delete[] lattice;
+    for (int i = 0; i < lt; i++)
+    {
+        int site_index = coordinatesToSiteIndex(i, 0, 0, 0);
+        std::cout << polyakovLine(site_index) << std::endl;
+    }
+    // free memory
+    delete[] lattice;
     return 0;
 }
 
@@ -116,26 +120,4 @@ void generateRandomSU2Rot(matrix &m)
         c + d * I, -c + d * I, a - b * I;
 
     m = temp * m;
-}
-
-void hotLattice()
-{
-    for (int site_index = 0; site_index < lsites; site_index++)
-    {
-        for (int dir = 0; dir < 4; dir++)
-        {
-            generateRandomSU2(lattice[site_index].field[dir]);
-        }
-    }
-}
-
-void coldLattice()
-{
-    for (int site_index = 0; site_index < lsites; site_index++)
-    {
-        for (int dir = 0; dir < 4; dir++)
-        {
-            lattice[site_index].field[dir] = matrix::Identity();
-        }
-    }
 }

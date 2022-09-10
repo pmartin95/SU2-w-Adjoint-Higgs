@@ -20,3 +20,25 @@ void siteIndexToCoordinates(int site_index, int &t, int &x, int &y, int &z)
     x = temp % l;
     t = temp / l;
 }
+
+void hotLattice()
+{
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        for (int dir = 0; dir < 4; dir++)
+        {
+            generateRandomSU2(lattice[site_index].field[dir]);
+        }
+    }
+}
+
+void coldLattice()
+{
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        for (int dir = 0; dir < 4; dir++)
+        {
+            lattice[site_index].field[dir] = matrix::Identity();
+        }
+    }
+}
