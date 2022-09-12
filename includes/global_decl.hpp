@@ -10,10 +10,16 @@ typedef struct link
 extern link *lattice;
 
 extern double beta;
+extern double lambda;
+extern double m2;
 extern int MAX_ITER;
 extern int iter_count;
 extern int Naccept;
 extern int Nreject;
+extern int NacceptLink;
+extern int NrejectLink;
+extern int NacceptHiggs;
+extern int NrejectHiggs;
 extern int l;
 extern int lt;
 extern int lsites;
