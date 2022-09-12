@@ -4,7 +4,6 @@
 #include <numeric>
 #include "observables.hpp"
 #include "global_decl.hpp"
-#include "generic_func.hpp"
 #include "lattice_ops.hpp"
 double plaquette(int site_index, int mu, int nu)
 {
@@ -163,4 +162,14 @@ void polyakovLinesAbs(std::string filename)
         std::cout << "Wrong number of lines.\n";
     file << std::accumulate(abs.begin(), abs.end(), 0.0) / abs.size() << std::endl;
     file.close();
+}
+
+double higgsSquareAverage()
+{
+    double accumulator = 0.0;
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        accumulator += (lattice[site_index].field[4] * lattice[site_index].field[4]).trace().real();
+    }
+    return accumulator;
 }
