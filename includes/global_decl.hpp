@@ -5,7 +5,7 @@
 typedef Eigen::Matrix<std::complex<double>, 2, 2> matrix;
 typedef struct link
 {
-    matrix field[4];
+    matrix field[5];
 } link;
 extern link *lattice;
 
