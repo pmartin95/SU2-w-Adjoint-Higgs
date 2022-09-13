@@ -1,6 +1,7 @@
 #include "action.hpp"
 #include "observables.hpp"
 #include "lattice_ops.hpp"
+
 double WilsonAction()
 {
     double accumulator = 0.0;
@@ -71,7 +72,7 @@ double GeorgiGlashowHiggsKinetic()
             x[dir]++;
             internalAccumulator += (tmp * lattice[site_index].field[dir] * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[4] * lattice[site_index].field[dir].adjoint()).trace().real();
         }
-        accumulator -=  internalAccumulator;
+        accumulator -= internalAccumulator;
     }
     return 2.0 * accumulator;
 }

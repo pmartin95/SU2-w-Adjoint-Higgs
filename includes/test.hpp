@@ -12,7 +12,6 @@
 
 #include "global_decl.hpp"
 #include "observables.hpp"
-#include "generic_func.hpp"
 #include "metropolis-hastings.hpp"
 #include "statistics.hpp"
 #include "configuration_io.hpp"

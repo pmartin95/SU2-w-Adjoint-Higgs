@@ -41,10 +41,13 @@ void generateRandomSU2Rot(matrix &m)
 void generateRandomTracelessHermitian(matrix &m)
 {
     double a, b, c;
+    matrix tmp;
+    const static double normalization = std::sqrt(6.0); // without this <Tr\phi^2> = 6. You can use this to set the expectation value to whatever we want.
     a = gen_normal(rng);
     b = gen_normal(rng);
     c = gen_normal(rng);
-    m << a, b - c * I, b + c * I, -a;
+    tmp << a, b - c * I, b + c * I, -a;
+    m = tmp / normalization;
 }
 void stepTracelessHermitian(matrix &m)
 {
@@ -54,5 +57,6 @@ void stepTracelessHermitian(matrix &m)
     c = gen_normal(rng);
     matrix temp;
     temp << a, b - c * I, b + c * I, -a;
+    temp = temp * step_size_higgs;
     m = m + temp;
 }

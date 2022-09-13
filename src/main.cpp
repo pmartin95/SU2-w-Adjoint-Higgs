@@ -12,19 +12,23 @@
 
 #include "global_decl.hpp"
 #include "observables.hpp"
-#include "generic_func.hpp"
 #include "metropolis-hastings.hpp"
 #include "statistics.hpp"
 #include "configuration_io.hpp"
 #include "lattice_ops.hpp"
 #include "test.hpp"
-
+#include "rand.hpp"
+#include "action.hpp"
 link *lattice;
 double beta = 2.3;
+double lambda = 0.1;
+double m2 = -.2;
 int MAX_ITER = 1;
 int iter_count = 0;
 int Naccept = 0, Nreject = 0;
-int l = 8, lt = 8, lsites = l * l * l * lt;
+int NacceptLink = 0, NrejectLink = 0;
+int NacceptHiggs = 0, NrejectHiggs = 0;
+int l = 2, lt = 2, lsites = l * l * l * lt;
 int ldir[4] = {lt, l, l, l};
 std::complex<double> I(0.0, 1.0);
 double rot_size = 0.4;
@@ -38,47 +42,19 @@ int main(int argc, char **argv)
     // Boilerplate
     std::random_device r;
     rng.seed(r());
+
+    // // simulation1(argc,argv);
     lattice = new link[lsites];
-    // simulation1(argc,argv);
+    step_size_higgs = 0.07;
     hotLattice();
-
-    for (int i = 0; i < lt; i++)
+    beta = 5;
+    for (int i = 0; i < 1000; i++)
     {
-        int site_index = coordinatesToSiteIndex(i, 0, 0, 0);
-        std::cout << polyakovLine(site_index) << std::endl;
+        metropolisHastingsSweep();
+        std::cout << higgsSquareAverage() << std::endl;
     }
-    // free memory
     delete[] lattice;
-    return 0;
-}
+    // // free memory
 
-double action()
-{
-    double accumulator = 0.0;
-    for (int site_index = 0; site_index < lsites; site_index++)
-    {
-        for (int nu = 0; nu < 4; nu++)
-        {
-            for (int mu = 0; mu < nu; mu++)
-            {
-                accumulator += (1.0 - plaquette(site_index, mu, nu));
-            }
-        }
-    }
-    return beta * accumulator;
-}
-double actionPartial(int site_index, int mu)
-{
-    double accumulator = 0.0;
-    for (int nu = 0; nu < 4; nu++)
-    {
-        if (mu == nu)
-            continue;
-        int x[4];
-        siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-        x[nu] = (x[nu] - 1 + ldir[nu]) % ldir[nu];
-        accumulator += plaquette(site_index, mu, nu);
-        accumulator += plaquette(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), mu, nu);
-    }
-    return -beta * accumulator;
+    return 0;
 }
