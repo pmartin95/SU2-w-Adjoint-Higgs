@@ -63,52 +63,39 @@ double GeorgiGlashowHiggsKinetic()
     for (int site_index = 0; site_index < lsites; site_index++)
     {
         tmp = lattice[site_index].field[4];
-        accumulator += 8.0 * (tmp * tmp).trace().real();
+        accumulator += 4.0 * (tmp * tmp).trace().real();
         internalAccumulator = 0.0;
         for (int dir = 0; dir < 4; dir++)
         {
-            int x[4];
-            siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-            x[dir]++;
-            internalAccumulator += (tmp * lattice[site_index].field[dir] * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[4] * lattice[site_index].field[dir].adjoint()).trace().real();
+            internalAccumulator += HiggsMixedTerm(site_index, dir);
         }
         accumulator -= internalAccumulator;
     }
-    return 2.0 * accumulator;
+    return 2.0 * kappa * accumulator;
 }
 
 double GeorgiGlashowHiggsKineticSite(int site_index)
 {
-    double accumulator = 0.0, internalAccumulator = 0.0;
-    matrix tmp;
-    tmp = lattice[site_index].field[4];
-    accumulator += 8.0 * (tmp * tmp).trace().real();
+    double accumulator, internalAccumulator;
+    matrix tmp = lattice[site_index].field[4];
+    accumulator = 4.0 * (tmp * tmp).trace().real();
     internalAccumulator = 0.0;
     for (int dir = 0; dir < 4; dir++)
     {
         int x[4];
         siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-        x[dir]++;
-        internalAccumulator += (tmp * lattice[site_index].field[dir] * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[4] * lattice[site_index].field[dir].adjoint()).trace().real();
+        x[dir] = (x[dir] - 1 + ldir[dir]) % ldir[dir];
+        internalAccumulator += HiggsMixedTerm(site_index, dir);
+        internalAccumulator += HiggsMixedTerm(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), dir);
     }
     accumulator -= internalAccumulator;
-    return 2.0 * accumulator;
+    return 2.0 * kappa * accumulator;
 }
 
 double GeorgiGlashowHiggsKineticSiteOneLink(int site_index, int dir)
 {
-    double accumulator = 0.0, internalAccumulator = 0.0;
-    matrix tmp;
-    tmp = lattice[site_index].field[4];
-    internalAccumulator = 0.0;
-    int x[4];
-    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-    x[dir]++;
-    internalAccumulator += (tmp * lattice[site_index].field[dir] * lattice[coordinatesToSiteIndex(x[0], x[1], x[2], x[3])].field[4] * lattice[site_index].field[dir].adjoint()).trace().real();
-    accumulator -= internalAccumulator;
-    return 2.0 * accumulator;
+    return -2.0 * kappa * HiggsMixedTerm(site_index, dir);
 }
-
 double GeorgiGlashowAction()
 {
     return WilsonAction() + GeorgiGlashowHiggsPotential() + GeorgiGlashowHiggsKinetic();
@@ -121,4 +108,18 @@ double GeorgiGlashowPartialActionLink(int site_index, int dir)
 double GeorgiGlashowPartialActionHiggs(int site_index)
 {
     return GeorgiGlashowHiggsKineticSite(site_index) + GeorgiGlashowHiggsPotentialSite(site_index);
+}
+
+double HiggsMixedTerm(int site_index, int dir) // dir = mu,  Tr( \Phi(x) U_{\mu}(x)  \Phi(x+\mu)  U_{\mu}^{\adjoint}(x) )
+{
+    int x[4], jump_index;
+
+    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
+    x[dir] = (x[dir] + 1) % ldir[dir];
+    jump_index = coordinatesToSiteIndex(x[0], x[1], x[2], x[3]);
+    matrix higgsX, higgsXpMU, link;
+    higgsX = lattice[site_index].field[4];
+    link = lattice[site_index].field[dir];
+    higgsXpMU = lattice[jump_index].field[4];
+    return (higgsX * link * higgsXpMU * link.adjoint()).trace().real();
 }

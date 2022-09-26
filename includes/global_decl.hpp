@@ -12,6 +12,7 @@ extern link *lattice;
 extern double beta;
 extern double lambda;
 extern double m2;
+extern double kappa;
 extern int MAX_ITER;
 extern int iter_count;
 extern int Naccept;
