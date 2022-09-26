@@ -171,5 +171,15 @@ double higgsSquareAverage()
     {
         accumulator += (lattice[site_index].field[4] * lattice[site_index].field[4]).trace().real();
     }
-    return accumulator;
+    return accumulator / lsites;
+}
+
+matrix higgsAverage()
+{
+    matrix accumulator = matrix::Zero();
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        accumulator += (lattice[site_index].field[4]);
+    }
+    return accumulator / lsites;
 }
