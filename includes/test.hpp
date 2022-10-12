@@ -19,4 +19,6 @@
 #pragma once
 
 void simulation1(int argc, char** argv);
+void simulation2(int argc, char** argv);
 void confIdentical();
+void simulation3(int argc, char** argv);
