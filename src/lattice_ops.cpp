@@ -31,8 +31,9 @@ void hotLattice()
         {
             generateRandomSU2(lattice[site_index].field[dir]);
         }
-        generateRandomTracelessHermitian(lattice[site_index].field[4]);
-        lattice[site_index].field[4] *= (std::abs(m2) / (2.0 * lambda));
+        // generateRandomTracelessHermitian(lattice[site_index].field[4]);
+        // lattice[site_index].field[4] *= (std::abs(m2) / (2.0 * lambda));
+        lattice[site_index].field[4] = matrix::Zero();
     }
 }
 
