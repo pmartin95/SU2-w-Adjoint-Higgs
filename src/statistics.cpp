@@ -6,6 +6,17 @@ double average(const std::vector<double> &input)
     temp = sumVec(input) / static_cast<double>(input.size());
     return temp;
 }
+
+matrix average(const std::vector<matrix> &input)
+{
+    matrix temp = matrix::Zero();
+    for (auto &x : input)
+    {
+        temp += x;
+    }
+    return temp / input.size();
+}
+
 double sumVec(const std::vector<double> &input)
 {
     double temp_sum = 0.0;
