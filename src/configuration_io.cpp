@@ -8,7 +8,7 @@ int pushConfig(std::string filename)
     std::ofstream conf;
     for (int site_index = 0; site_index < lsites; site_index++)
     {
-        for (int dir = 0; dir < 4; dir++)
+        for (int dir = 0; dir < 5; dir++)
         {
             v.push_back(lattice[site_index].field[dir](0, 0).imag());
             v.push_back(lattice[site_index].field[dir](0, 0).real());
@@ -28,7 +28,7 @@ int pushConfig(std::string filename)
 int pullConfig(std::string filename)
 {
     int i, j, k;
-    int doublesPerSite = 4 /* matrices per site */ * 8 /*doubles per matrix*/;
+    int doublesPerSite = 5 /* matrices per site */ * 8 /*doubles per matrix*/;
     std::ifstream conf;
     std::vector<double> v(lsites * doublesPerSite);
 
@@ -40,7 +40,7 @@ int pullConfig(std::string filename)
     {
         k = site_index * doublesPerSite;
         j = 0;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 5; i++)
         {
             lattice[site_index].field[i](0, 0) = std::complex<double>(v[k + j++], v[k + j++]);
             lattice[site_index].field[i](0, 1) = std::complex<double>(v[k + j++], v[k + j++]);
