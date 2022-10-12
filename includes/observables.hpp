@@ -11,3 +11,4 @@ double rectangle(int site_index, int mu, int nu, int mu_len, int nu_len);
 double rectangleAverage(int mu_len, int nu_len);
 double higgsSquareAverage();
 matrix higgsAverage();
+double correlator(int site_index, int time_forward);

@@ -183,3 +183,23 @@ matrix higgsAverage()
     }
     return accumulator / lsites;
 }
+
+double correlator(int site_index, int time_forward)
+{
+    matrix accumulator = lattice[site_index].field[4];
+
+    int x[4];
+    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
+
+    for (int i = x[0]; i < x[0] + time_forward; i++)
+    {
+        accumulator = accumulator * lattice[coordinatesToSiteIndex((x[0] + i + ldir[0]) % ldir[0], x[1], x[2], x[3])].field[0];
+    }
+    accumulator = accumulator * lattice[coordinatesToSiteIndex((x[0] + time_forward + ldir[0]) % ldir[0], x[1], x[2], x[3])].field[4];
+
+    for (int i = time_forward; i != x[0]; i = (i + 1 + ldir[0]) % ldir[0])
+    {
+        accumulator = accumulator * lattice[coordinatesToSiteIndex(i, x[1], x[2], x[3])].field[0];
+    }
+    return accumulator.trace().real();
+}
