@@ -31,3 +31,5 @@ extern double step_size_higgs;
 extern std::mt19937 rng;
 extern std::uniform_real_distribution<double> gen;
 extern std::normal_distribution<double> gen_normal;
+extern std::string datFolder;
+extern std::string confFolder;
