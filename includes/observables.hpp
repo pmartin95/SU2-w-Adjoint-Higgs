@@ -12,3 +12,4 @@ double rectangleAverage(int mu_len, int nu_len);
 double higgsSquareAverage();
 matrix higgsAverage();
 double correlator(int site_index, int time_forward);
+double averageCorrelatorVolume(int time_forward);

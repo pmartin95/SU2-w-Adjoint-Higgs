@@ -256,6 +256,15 @@ void simulation2(int argc, char **argv)
 // correlator,higgsSquareAverage,
 void simulation3(int argc, char **argv)
 {
+    std::vector<std::vector<double>> correlationData;
+    for (int i = 0; i < ldir[0]; i++)
+    {
+        std::vector<double> temp;
+        correlationData.push_back(std::move(temp));
+    }
+
+    std::vector<double> higgsSquareData;
+
     bool thermalize = true;
     if (argc > 0)
     {
@@ -281,10 +290,12 @@ void simulation3(int argc, char **argv)
     int numThermalizations = 3000, numObservations = 100, numSweepsPerObservation = 1000;
     if (thermalize)
     {
+        hotLattice();
         for (int i = 0; i < numThermalizations; i++)
         {
             metropolisHastingsSweep();
         }
+        std::cout << "Thermalized.\n";
     }
 
     for (int i = 0; i < numObservations; i++)
@@ -294,8 +305,32 @@ void simulation3(int argc, char **argv)
             metropolisHastingsSweep();
         }
         // collect observations
+        for (int i = 0; i < ldir[0]; i++)
+        {
+            correlationData[i].push_back(averageCorrelatorVolume(i));
+        }
+        higgsSquareData.push_back(higgsSquareAverage());
         // write configuration to file
+        pushConfig("configurations/conf" + std::to_string(m2) + ".bin");
     }
     // calculate statistics
+    std::vector<double> correlatorAggregate, correlatorError;
+    double higgsSquareAggregate, higgsSquareError;
+
+    for (int i = 0; i < ldir[0]; i++)
+    {
+        double tempAve, tempError;
+        computeJackknifeStatistics(correlationData[i], 10, tempAve, tempError);
+        correlatorAggregate.push_back(tempAve);
+        correlatorError.push_back(tempError);
+    }
+    computeJackknifeStatistics(higgsSquareData, 10, higgsSquareAggregate, higgsSquareError);
     //  write observations to file
+    std::ofstream corrFile(datFolder + "correlation-m2-" + std::to_string(m2) + ".txt", std::ios_base::app);
+    std::ofstream higgsFile(datFolder + "higgssquare-m2-" + std::to_string(m2) + ".txt", std::ios_base::app);
+    for (int i = 0; i < ldir[0]; i++)
+    {
+        corrFile << m2 << " " << i << " " << correlatorAggregate[i] << " " << correlatorError[i] << std::endl;
+    }
+    higgsFile << m2 << " " << higgsSquareAggregate << " " << higgsSquareError << std::endl;
 }

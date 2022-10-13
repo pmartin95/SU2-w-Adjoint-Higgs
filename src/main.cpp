@@ -22,39 +22,33 @@
 link *lattice;
 double beta = 2.3;
 double lambda = 0.1;
-double m2 = -.2;
+double m2 = 2.0;
+double kappa = 1.0; // This term controls the strength of the Higgs kinetic term in the action.
 int MAX_ITER = 1;
 int iter_count = 0;
 int Naccept = 0, Nreject = 0;
 int NacceptLink = 0, NrejectLink = 0;
 int NacceptHiggs = 0, NrejectHiggs = 0;
-int l = 2, lt = 2, lsites = l * l * l * lt;
+int l = 8, lt = 8, lsites = l * l * l * lt;
 int ldir[4] = {lt, l, l, l};
 std::complex<double> I(0.0, 1.0);
 double rot_size = 0.4;
-double step_size_higgs = 0.4;
+double step_size_higgs = 0.07;
 std::mt19937 rng;
 std::uniform_real_distribution<double> gen(0.0, 1.0);
 std::normal_distribution<double> gen_normal(0.0, 1.0);
 
+std::string datFolder = "./dat/cluster_data4/";
+std::string confFolder = "./configurations";
+
 int main(int argc, char **argv)
 {
+
     // Boilerplate
     std::random_device r;
     rng.seed(r());
-
-    // // simulation1(argc,argv);
     lattice = new link[lsites];
-    step_size_higgs = 0.07;
-    hotLattice();
-    beta = 5;
-    for (int i = 0; i < 1000; i++)
-    {
-        metropolisHastingsSweep();
-        std::cout << higgsSquareAverage() << std::endl;
-    }
+    simulation3(argc, argv);
     delete[] lattice;
-    // // free memory
-
     return 0;
 }

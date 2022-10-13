@@ -5,6 +5,7 @@
 #include "observables.hpp"
 #include "global_decl.hpp"
 #include "lattice_ops.hpp"
+#include "statistics.hpp"
 double plaquette(int site_index, int mu, int nu)
 {
     int x[4];
@@ -202,4 +203,20 @@ double correlator(int site_index, int time_forward)
         accumulator = accumulator * lattice[coordinatesToSiteIndex(i, x[1], x[2], x[3])].field[0];
     }
     return accumulator.trace().real();
+}
+
+double averageCorrelatorVolume(int time_forward)
+{
+    std::vector<double> data;
+    for (int i = 0; i < ldir[1]; i++)
+    {
+        for (int j = 0; j < ldir[2]; j++)
+        {
+            for (int k = 0; k < ldir[3]; k++)
+            {
+                data.push_back(correlator(coordinatesToSiteIndex(0, i, j, k), time_forward));
+            }
+        }
+    }
+    return average(data);
 }

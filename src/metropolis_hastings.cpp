@@ -1,6 +1,7 @@
 #include "global_decl.hpp"
 #include "metropolis-hastings.hpp"
 #include "action.hpp"
+#include <iostream>
 
 void metropolisHastingsSweep()
 {
