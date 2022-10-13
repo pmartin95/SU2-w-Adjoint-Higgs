@@ -21,7 +21,7 @@
 
 link *lattice;
 double beta = 2.3;
-int MAX_ITER = 1;
+int MAX_ITER = 10;
 int iter_count = 0;
 int Naccept = 0, Nreject = 0;
 int l = 8, lt = 8, lsites = l * l * l * lt;
@@ -32,7 +32,7 @@ double rot_size = 0.4;
 std::mt19937 rng;
 std::uniform_real_distribution<double> gen(0.0, 1.0);
 std::normal_distribution<double> gen_normal(0.0, 1.0);
-
+std::string dat_folder = "./dat/cluster_data3/";
 int main(int argc, char **argv)
 {
     // Boilerplate
@@ -40,8 +40,6 @@ int main(int argc, char **argv)
     rng.seed(r());
     lattice = new link[lsites];
     simulation1(argc,argv);
-
-
 
     //free memory
     // delete[] lattice;

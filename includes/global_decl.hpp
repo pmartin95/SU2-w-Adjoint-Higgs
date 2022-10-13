@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include <random>
 #include <complex>
+#include <string>
 typedef Eigen::Matrix<std::complex<double>, 2, 2> matrix;
 typedef struct link
 {
@@ -23,3 +24,4 @@ extern double rot_size;
 extern std::mt19937 rng;
 extern std::uniform_real_distribution<double> gen;
 extern std::normal_distribution<double> gen_normal;
+extern std::string dat_folder;

@@ -1,6 +1,7 @@
 #!/bin/bash
 #load module gcc
-for i in $(seq  0.1 0.1 3.9);
-do ./bin/main -beta $i > ./output/main${i}.out &
-done
-wait
+# for i in $(seq  0.1 0.1 3.9);
+# do ./bin/main -beta $i > ./output/main${i}.out &
+# done
+./bin/main -beta 3.0 1> ./output/main3.0.out 2> ./error/main3.0.err 
+#wait
