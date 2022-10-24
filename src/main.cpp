@@ -38,8 +38,8 @@ std::mt19937 rng;
 std::uniform_real_distribution<double> gen(0.0, 1.0);
 std::normal_distribution<double> gen_normal(0.0, 1.0);
 
-std::string datFolder = "./dat/cluster_data5/";
-std::string confFolder = "./configurations";
+std::string datFolder = "./dat/cluster_data6/";
+std::string confFolder = "./configurations/";
 
 int main(int argc, char **argv)
 {

@@ -283,7 +283,7 @@ void simulation3(int argc, char **argv)
             {
                 thermalize = false;
                 std::cout << "Skipping thermalization.\n";
-                pullConfig("configurations/conf" + std::to_string(m2) + ".bin");
+                pullConfig(confFolder + std::to_string(m2) + ".bin");
             }
         }
     }
@@ -311,26 +311,30 @@ void simulation3(int argc, char **argv)
         }
         higgsSquareData.push_back(higgsSquareAverage());
         // write configuration to file
-        pushConfig("configurations/conf" + std::to_string(m2) + ".bin");
+        pushConfig(confFolder + std::to_string(m2) + ".bin");
     }
     // calculate statistics
     std::vector<double> correlatorAggregate, correlatorError;
     double higgsSquareAggregate, higgsSquareError;
 
-    for (int i = 0; i < ldir[0]; i++)
-    {
-        double tempAve, tempError;
-        computeJackknifeStatistics(correlationData[i], 10, tempAve, tempError);
-        correlatorAggregate.push_back(tempAve);
-        correlatorError.push_back(tempError);
-    }
-    computeJackknifeStatistics(higgsSquareData, 10, higgsSquareAggregate, higgsSquareError);
+    // for (int i = 0; i < ldir[0]; i++)
+    // {
+    //     double tempAve, tempError;
+    //     computeJackknifeStatistics(correlationData[i], 10, tempAve, tempError);
+    //     correlatorAggregate.push_back(tempAve);
+    //     correlatorError.push_back(tempError);
+    // }
+    // computeJackknifeStatistics(higgsSquareData, 10, higgsSquareAggregate, higgsSquareError);
+    //! Commenting out this section temporarily
     //  write observations to file
     std::ofstream corrFile(datFolder + "correlation-m2-" + std::to_string(m2) + ".txt", std::ios_base::app);
     std::ofstream higgsFile(datFolder + "higgssquare-m2-" + std::to_string(m2) + ".txt", std::ios_base::app);
     for (int i = 0; i < ldir[0]; i++)
     {
-        corrFile << m2 << " " << i << " " << correlatorAggregate[i] << " " << correlatorError[i] << std::endl;
+        for (int j = 0; j < correlationData[i].size(); j++)
+        {
+            corrFile << m2 << " " << i << " " << correlationData[i][j]  << std::endl;
+        }
     }
     higgsFile << m2 << " " << higgsSquareAggregate << " " << higgsSquareError << std::endl;
 }
