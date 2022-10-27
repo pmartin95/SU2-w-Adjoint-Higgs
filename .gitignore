@@ -6,4 +6,5 @@ obj/**
 *.png
 includes/docs/.hgeol
 output/*.out
+dat/**
 configurations/**

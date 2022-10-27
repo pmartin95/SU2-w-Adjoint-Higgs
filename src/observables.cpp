@@ -4,8 +4,8 @@
 #include <numeric>
 #include "observables.hpp"
 #include "global_decl.hpp"
-#include "generic_func.hpp"
 #include "lattice_ops.hpp"
+#include "statistics.hpp"
 double plaquette(int site_index, int mu, int nu)
 {
     int x[4];
@@ -163,4 +163,60 @@ void polyakovLinesAbs(std::string filename)
         std::cout << "Wrong number of lines.\n";
     file << std::accumulate(abs.begin(), abs.end(), 0.0) / abs.size() << std::endl;
     file.close();
+}
+
+double higgsSquareAverage()
+{
+    double accumulator = 0.0;
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        accumulator += (lattice[site_index].field[4] * lattice[site_index].field[4]).trace().real();
+    }
+    return accumulator / lsites;
+}
+
+matrix higgsAverage()
+{
+    matrix accumulator = matrix::Zero();
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        accumulator += (lattice[site_index].field[4]);
+    }
+    return accumulator / lsites;
+}
+
+double correlator(int site_index, int time_forward)
+{
+    matrix accumulator = lattice[site_index].field[4];
+
+    int x[4];
+    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
+
+    for (int i = x[0]; i < x[0] + time_forward; i++)
+    {
+        accumulator = accumulator * lattice[coordinatesToSiteIndex((x[0] + i + ldir[0]) % ldir[0], x[1], x[2], x[3])].field[0];
+    }
+    accumulator = accumulator * lattice[coordinatesToSiteIndex((x[0] + time_forward + ldir[0]) % ldir[0], x[1], x[2], x[3])].field[4];
+
+    for (int i = time_forward; i != x[0]; i = (i + 1 + ldir[0]) % ldir[0])
+    {
+        accumulator = accumulator * lattice[coordinatesToSiteIndex(i, x[1], x[2], x[3])].field[0];
+    }
+    return accumulator.trace().real();
+}
+
+double averageCorrelatorVolume(int time_forward)
+{
+    std::vector<double> data;
+    for (int i = 0; i < ldir[1]; i++)
+    {
+        for (int j = 0; j < ldir[2]; j++)
+        {
+            for (int k = 0; k < ldir[3]; k++)
+            {
+                data.push_back(correlator(coordinatesToSiteIndex(0, i, j, k), time_forward));
+            }
+        }
+    }
+    return average(data);
 }
