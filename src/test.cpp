@@ -333,7 +333,7 @@ void simulation3(int argc, char **argv)
     {
         for (int j = 0; j < correlationData[i].size(); j++)
         {
-            corrFile << m2 << " " << i << " " << correlationData[i][j]  << std::endl;
+            corrFile << m2 << " " << i << " " << correlationData[i][j] << std::endl;
         }
     }
     higgsFile << m2 << " " << higgsSquareAggregate << " " << higgsSquareError << std::endl;
