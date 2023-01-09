@@ -11,4 +11,4 @@ parallel --jobs 10 ./bin/main -beta {} '>' ./output/main{}.out ::: $(seq 1.0 0.1
 
 
 cd dat/testdata6
-python3 ./local-analyze-Creutz.py 
+python3 ./dat/testdata6/local-analyze-Creutz.py 

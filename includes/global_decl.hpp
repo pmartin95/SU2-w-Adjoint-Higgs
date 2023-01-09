@@ -8,7 +8,11 @@ typedef struct link
 {
     matrix field[5];
 } link;
+typedef void (*boundary_condition)(matrix &, int, int, int);
+
 extern link *lattice;
+
+extern boundary_condition bc;
 
 extern double beta;
 extern double lambda;

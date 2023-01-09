@@ -37,7 +37,7 @@ double step_size_higgs = 0.07;
 std::mt19937 rng;
 std::uniform_real_distribution<double> gen(0.0, 1.0);
 std::normal_distribution<double> gen_normal(0.0, 1.0);
-
+boundary_condition bc = &ptwist;
 std::string datFolder = "./dat/testdata6/";
 std::string confFolder = "./configurations/";
 
