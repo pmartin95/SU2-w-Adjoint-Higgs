@@ -120,7 +120,7 @@ double polyakovLine(int site_index, int dir)
 void polyakovLines(std::string filename, int dir1, int dir2)
 {
     int x[4] = {0};
-    std::ofstream file(dat_folder+filename, std::ios_base::app);
+    std::ofstream file(datFolder + filename, std::ios_base::app);
     for (int i = 0; i < ldir[dir1]; i++)
     {
         for (int j = 0; j < ldir[dir2]; j++)
@@ -135,7 +135,7 @@ void polyakovLines(std::string filename, int dir1, int dir2)
 void polyakovLinesAbs(std::string filename)
 {
     int x[4] = {0};
-    std::ofstream file(dat_folder+filename, std::ios_base::app);
+    std::ofstream file(datFolder + filename, std::ios_base::app);
     std::vector<double> abs;
     abs.reserve(4 * l * l * lt);
     for (int dir = 0; dir < 4; dir++)
