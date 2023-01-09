@@ -24,7 +24,7 @@ double beta = 2.3;
 double lambda = 0.1;
 double m2 = 2.0;
 double kappa = 0.0; // This term controls the strength of the Higgs kinetic term in the action.
-int MAX_ITER = 1;
+int MAX_ITER = 2;
 int iter_count = 0;
 int Naccept = 0, Nreject = 0;
 int NacceptLink = 0, NrejectLink = 0;

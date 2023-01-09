@@ -6,18 +6,17 @@
 #include "global_decl.hpp"
 #include "lattice_ops.hpp"
 #include "statistics.hpp"
-double plaquette(int site_index, int mu, int nu)
+double plaquette(int site_index, int (&shift)[4], int mu, int nu)
 {
-    int x[4];
-    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-    int y[4] = {x[0], x[1], x[2], x[3]}, z[4] = {x[0], x[1], x[2], x[3]};
-    y[mu] = (x[mu] + 1) % ldir[mu];
-    z[nu] = (x[nu] + 1) % ldir[nu];
-    matrix temp = lattice[site_index].field[mu];
-
-    temp *= lattice[coordinatesToSiteIndex(y[0], y[1], y[2], y[3])].field[nu];
-    temp *= lattice[coordinatesToSiteIndex(z[0], z[1], z[2], z[3])].field[mu].adjoint();
-    temp *= lattice[site_index].field[nu].adjoint();
+    int y[4], z[4];
+    copyCoordinates(shift, z);
+    copyCoordinates(shift, y);
+    y[mu]++;
+    z[nu]++;
+    matrix temp = callLatticeSite(site_index, shift, mu);
+    temp *= callLatticeSite(site_index, y, nu);
+    temp *= callLatticeSite(site_index, z, mu);
+    temp *= callLatticeSite(site_index, shift, nu).adjoint();
     return 0.5 * temp.trace().real();
 }
 
@@ -25,13 +24,14 @@ double plaquetteAverage()
 {
     double accumulator = 0.0;
     int count = 0;
+    int jumpNone[4] = {0};
     for (int site_index = 0; site_index < lsites; site_index++)
     {
         for (int nu = 0; nu < 4; nu++)
         {
             for (int mu = 0; mu < nu; mu++)
             {
-                accumulator += plaquette(site_index, mu, nu);
+                accumulator += plaquette(site_index, jumpNone, mu, nu);
             }
         }
     }
@@ -219,4 +219,19 @@ double averageCorrelatorVolume(int time_forward)
         }
     }
     return average(data);
+}
+
+void copyCoordinates(int (&src)[4], int (&dest)[4])
+{
+    dest[0] = src[0];
+    dest[1] = src[1];
+    dest[2] = src[2];
+    dest[3] = src[3];
+}
+void addCoordinatesInPlace(int (&src)[4], int (&dest)[4])
+{
+    dest[0] += src[0];
+    dest[1] += src[1];
+    dest[2] += src[2];
+    dest[3] += src[3];
 }

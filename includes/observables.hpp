@@ -1,7 +1,7 @@
 #include <string>
 #include "global_decl.hpp"
 #pragma once
-double plaquette(int site_index, int mu, int nu);
+double plaquette(int site_index, int (&shift)[4], int mu, int nu);
 double plaquetteAverage();
 double polyakovLine(int site_index);
 double polyakovLine(int site_index, int dir);
@@ -13,3 +13,6 @@ double higgsSquareAverage();
 matrix higgsAverage();
 double correlator(int site_index, int time_forward);
 double averageCorrelatorVolume(int time_forward);
+
+void copyCoordinates(int (&src)[4], int (&dest)[4]);
+void addCoordinatesInPlace(int (&src)[4], int (&dest)[4]);

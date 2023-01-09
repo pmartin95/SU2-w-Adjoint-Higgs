@@ -5,13 +5,14 @@
 double WilsonAction()
 {
     double accumulator = 0.0;
+    int jumpNone[4] = {0};
     for (int site_index = 0; site_index < lsites; site_index++)
     {
         for (int nu = 0; nu < 4; nu++)
         {
             for (int mu = 0; mu < nu; mu++)
             {
-                accumulator += (1.0 - plaquette(site_index, mu, nu));
+                accumulator += (1.0 - plaquette(site_index, jumpNone, mu, nu));
             }
         }
     }
@@ -20,6 +21,7 @@ double WilsonAction()
 double WilsonActionPartial(int site_index, int mu)
 {
     double accumulator = 0.0;
+    int jumpNone[4] = {0};
     for (int nu = 0; nu < 4; nu++)
     {
         if (mu == nu)
@@ -27,8 +29,8 @@ double WilsonActionPartial(int site_index, int mu)
         int x[4];
         siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
         x[nu] = (x[nu] - 1 + ldir[nu]) % ldir[nu];
-        accumulator += plaquette(site_index, mu, nu);
-        accumulator += plaquette(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), mu, nu);
+        accumulator += plaquette(site_index, jumpNone, mu, nu);
+        accumulator += plaquette(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), jumpNone, mu, nu);
     }
     return -beta * accumulator;
 }
