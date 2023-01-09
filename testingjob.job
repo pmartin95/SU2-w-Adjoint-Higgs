@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cd dat/testdata6
+ls
+rm -rf *.txt
+cd ../../
+
+make clean
+make -j
+parallel --jobs 10 ./bin/main -beta {} '>' ./output/main{}.out ::: $(seq 1.0 0.1 3.0)
+
+
+cd dat/testdata6
+python3 ./local-analyze-Creutz.py 
