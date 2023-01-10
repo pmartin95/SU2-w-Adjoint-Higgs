@@ -38,39 +38,35 @@ double plaquetteAverage()
     return accumulator / (lsites * 2 * 3);
 }
 
-double rectangle(int site_index, int mu, int nu, int mu_len, int nu_len)
+double rectangle(int site_index, int (&shift)[4], int mu, int nu, int mu_len, int nu_len)
 {
-    int x[4];
-    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-    int y[4] = {x[0], x[1], x[2], x[3]}, z[4] = {x[0], x[1], x[2], x[3]};
-
+    int y[4], z[4];
+    copyCoordinates(shift, z);
+    copyCoordinates(shift, y);
     matrix forward = matrix::Identity(), backward = matrix::Identity();
-
-    // bottom
+    // Bottom
     for (int i = 0; i < mu_len; i++)
     {
-        y[mu] = (x[mu] + i + ldir[mu]) % ldir[mu];
-        forward *= lattice[coordinatesToSiteIndex(y[0], y[1], y[2], y[3])].field[mu];
+        forward = forward * callLatticeSite(site_index, y, mu);
+        y[mu]++;
     }
-    y[mu] = (x[mu] + mu_len + ldir[mu]) % ldir[mu];
-    // right
+    // Right
     for (int i = 0; i < nu_len; i++)
     {
-        y[nu] = (x[nu] + i + ldir[nu]) % ldir[nu];
-        forward *= lattice[coordinatesToSiteIndex(y[0], y[1], y[2], y[3])].field[nu];
+        forward = forward * callLatticeSite(site_index, y, nu);
+        y[nu]++;
     }
-    // left
+    // Left
     for (int i = 0; i < nu_len; i++)
     {
-        z[nu] = (x[nu] + i + ldir[nu]) % ldir[nu];
-        backward *= lattice[coordinatesToSiteIndex(z[0], z[1], z[2], z[3])].field[nu];
+        backward = backward * callLatticeSite(site_index, z, nu);
+        z[nu]++;
     }
-    z[nu] = (x[nu] + nu_len + ldir[nu]) % ldir[nu];
-    // top
+    // Top
     for (int i = 0; i < mu_len; i++)
     {
-        z[mu] = (x[mu] + i + ldir[mu]) % ldir[mu];
-        backward *= lattice[coordinatesToSiteIndex(z[0], z[1], z[2], z[3])].field[mu];
+        backward = backward * callLatticeSite(site_index, z, mu);
+        z[mu]++;
     }
 
     return 0.5 * (forward * backward.adjoint()).trace().real();
@@ -80,13 +76,14 @@ double rectangleAverage(int mu_len, int nu_len)
 {
     double accumulator = 0.0;
     int count = 0;
+    int jumpNone[4] = {0};
     for (int site_index = 0; site_index < lsites; site_index++)
     {
         for (int nu = 0; nu < 4; nu++)
         {
             for (int mu = 0; mu < nu; mu++)
             {
-                accumulator += rectangle(site_index, mu, nu, mu_len, nu_len);
+                accumulator += rectangle(site_index, jumpNone, mu, nu, mu_len, nu_len);
             }
         }
     }
