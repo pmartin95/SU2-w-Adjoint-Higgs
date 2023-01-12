@@ -40,7 +40,8 @@ std::normal_distribution<double> gen_normal(0.0, 1.0);
 boundary_condition bc = &ptwist;
 std::string datFolder = "./dat/testdata6/";
 std::string confFolder = "./configurations/";
-
+std::string bcName = "p";
+std::string identifier;
 int main(int argc, char **argv)
 {
 

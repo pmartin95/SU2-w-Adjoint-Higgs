@@ -18,7 +18,15 @@
 #include "lattice_ops.hpp"
 #pragma once
 
-void simulation1(int argc, char** argv);
-void simulation2(int argc, char** argv);
+void simulation1(int argc, char **argv);
+void simulation2(int argc, char **argv);
 void confIdentical();
-void simulation3(int argc, char** argv);
+void simulation3(int argc, char **argv);
+void simulation1mod(int argc, char **argv);
+void simulation2mod(int argc, char **argv);
+void simulation3mod(int argc, char **argv);
+void simulation4(int argc, char **argv);
+void argumentInput(int argc, char **argv);
+int configureStep();
+void boundaryConditionTest(int argc, char **argv);
+void indexTest();
