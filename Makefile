@@ -6,19 +6,19 @@ DEPDIR=includes
 SRCS=$(wildcard $(SRCDIR)/*.cpp)
 OBJS=$(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 DEP=$(wildcard $(DEPDIR)/*.hpp)
-
+BOOST=-lboost_system -lboost_filesystem
 INC=-I$(DEPDIR)/eigen -I$(DEPDIR)
-FLAGS=-lm -fopenmp -O4# -ggdb3 -pg
+FLAGS=-lm -fopenmp -O4 # -ggdb3 -pg
 
 all: bin/main
 
 bin/main: $(OBJS) $(DEP)
 	@echo "Linking objects into main.exe..."
-	@$(CC) $(INC) $(FLAGS) -o $(BINDIR)/main $(OBJS)
+	@$(CC) $(INC) $(FLAGS) -o $(BINDIR)/main $(OBJS) $(BOOST)
 
 obj/%.o : src/%.cpp $(DEP)
 	@echo "Creating $(<:src/%.cpp=%) object file..."
-	@$(CC) $(INC) $(FLAGS) -c -o $@ $<
+	@$(CC) $(INC) $(FLAGS) -c -o $@ $< $(BOOST)
 
 .PHONY:clean 
 
