@@ -4,13 +4,13 @@
 #include <complex>
 #include <string>
 typedef Eigen::Matrix<std::complex<double>, 2, 2> matrix;
-typedef struct link
+typedef struct site
 {
     matrix field[5];
-} link;
+} site;
 typedef void (*boundary_condition)(matrix &, int, int, int);
 
-extern link *lattice;
+extern site *lattice;
 
 extern boundary_condition bc;
 
@@ -31,6 +31,7 @@ extern int lt;
 extern int lsites;
 extern int ldir[4];
 extern bool thermalize;
+extern bool configSteps;
 extern std::complex<double> I;
 extern double rot_size;
 extern double step_size_higgs;
