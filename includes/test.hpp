@@ -15,6 +15,7 @@
 #include "metropolis-hastings.hpp"
 #include "statistics.hpp"
 #include "configuration_io.hpp"
+#include "utility.hpp"
 #include "lattice_ops.hpp"
 #pragma once
 

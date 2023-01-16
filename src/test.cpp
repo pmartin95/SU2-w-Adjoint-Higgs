@@ -109,7 +109,7 @@ void simulation1(int argc, char **argv)
 void confIdentical()
 {
     hotLattice();
-    link *templattice = new link[lsites];
+    site *templattice = new site[lsites];
     for (int site_index = 0; site_index < lsites; site_index++)
     {
         for (int dir = 0; dir < 4; dir++)
