@@ -10,6 +10,7 @@ void polyakovLinesAbs(std::string filename);
 double rectangle(int site_index, int (&shift)[4], int mu, int nu, int mu_len, int nu_len);
 double rectangleAverage(int mu_len, int nu_len);
 double higgsSquareAverage();
+double higgsSquareSum();
 matrix higgsAverage();
 double correlator(int site_index, int time_forward);
 double averageCorrelatorVolume(int time_forward);

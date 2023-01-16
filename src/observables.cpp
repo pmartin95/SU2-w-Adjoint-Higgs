@@ -171,7 +171,18 @@ double higgsSquareAverage()
     }
     return accumulator / lsites;
 }
-
+double higgsSquareSum()
+{
+    double accumulator = 0.0;
+    matrix tmp;
+    int jumpNone[4] = {0};
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        callLatticeSite(tmp, site_index, jumpNone, 4);
+        accumulator += (tmp * tmp).trace().real();
+    }
+    return accumulator;
+}
 matrix higgsAverage()
 {
     matrix accumulator = matrix::Zero();
