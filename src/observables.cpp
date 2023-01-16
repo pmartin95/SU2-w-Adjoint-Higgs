@@ -15,7 +15,7 @@ double plaquette(int site_index, int (&shift)[4], int mu, int nu)
     z[nu]++;
     matrix temp = callLatticeSite(site_index, shift, mu);
     temp *= callLatticeSite(site_index, y, nu);
-    temp *= callLatticeSite(site_index, z, mu);
+    temp *= callLatticeSite(site_index, z, mu).adjoint();
     temp *= callLatticeSite(site_index, shift, nu).adjoint();
     return 0.5 * temp.trace().real();
 }
