@@ -50,3 +50,10 @@ int pullConfig(std::string filename)
     }
     return 0;
 }
+
+void createIdentifier(std::string &unique_key)
+{
+    unique_key = "m2_" + std::to_string(m2) + "beta" + std::to_string(beta) +
+                 "lambda" + std::to_string(lambda) + "kappa" + std::to_string(kappa) +
+                 "l" + std::to_string(l) + "t" + std::to_string(lt) + "bc" + bcName;
+}
