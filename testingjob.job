@@ -1,14 +1,15 @@
 #!/bin/bash
 
 cd dat/testdata6
-ls
 rm -rf *.txt
 cd ../../
 
 make clean
 make -j
-parallel --jobs 10 ./bin/main -beta {} '>' ./output/main{}.out ::: $(seq 1.0 0.1 3.0)
-
+parallel --jobs 24 ./bin/main -beta {} '>' ./output/main{}.out ::: $(seq 0.1 0.1 3.0)
 
 cd dat/testdata6
-python3 ./dat/testdata6/local-analyze-Creutz.py 
+ls
+python3 local-analyze-Creutz.py
+mv testCreutzRatio.png ./../../testCreutzRatio.png
+cd ../../
