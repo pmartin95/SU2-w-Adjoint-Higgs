@@ -31,3 +31,5 @@ void argumentInput(int argc, char **argv);
 int configureStep();
 void boundaryConditionTest(int argc, char **argv);
 void indexTest();
+void simulation5(int argc, char **argv);
+void midSimObservables();

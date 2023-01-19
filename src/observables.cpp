@@ -23,7 +23,6 @@ double plaquette(int site_index, int (&shift)[4], int mu, int nu)
 double plaquetteAverage()
 {
     double accumulator = 0.0;
-    int count = 0;
     int jumpNone[4] = {0};
     for (int site_index = 0; site_index < lsites; site_index++)
     {
@@ -75,7 +74,6 @@ double rectangle(int site_index, int (&shift)[4], int mu, int nu, int mu_len, in
 double rectangleAverage(int mu_len, int nu_len)
 {
     double accumulator = 0.0;
-    int count = 0;
     int jumpNone[4] = {0};
     for (int site_index = 0; site_index < lsites; site_index++)
     {
@@ -156,9 +154,9 @@ void polyakovLinesAbs(std::string filename)
             }
         }
     }
-    if (abs.size() != 4 * l * l * lt)
+    if (abs.size() != static_cast<long unsigned int>(4 * l * l * lt))
         std::cout << "Wrong number of lines.\n";
-    file << std::accumulate(abs.begin(), abs.end(), 0.0) / abs.size() << std::endl;
+    file << std::accumulate(abs.begin(), abs.end(), 0.0) / static_cast<double>(abs.size()) << std::endl;
     file.close();
 }
 

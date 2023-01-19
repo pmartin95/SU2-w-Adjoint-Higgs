@@ -20,7 +20,7 @@ matrix average(const std::vector<matrix> &input)
 double sumVec(const std::vector<double> &input)
 {
     double temp_sum = 0.0;
-    int vec_size = input.size();
+    int vec_size = static_cast<int>(input.size());
 
     for (int i = 0; i < vec_size; i++)
         temp_sum += input[i];
@@ -34,7 +34,7 @@ int computeJackknifeStatistics(const std::vector<double> &inputData, int setLeng
     std::vector<double> holdingVector;
 
     int numSets;
-    numSets = inputData.size() / setLength;
+    numSets = inputData.size() / static_cast<long unsigned int>(setLength);
 
     std::vector<double> setOfAverages(numSets, 0.0);
     for (int i = 0; i < numSets; i++)

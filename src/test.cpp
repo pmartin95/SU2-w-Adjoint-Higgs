@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include <iomanip>
 void simulation1(int argc, char **argv)
 {
     // arguments
@@ -34,7 +35,6 @@ void simulation1(int argc, char **argv)
         MxNdata.push_back(std::move(tempdata2));
     }
     std::vector<double> MxMave(highest_len, 0.0), MxMerror(highest_len, 0.0), MxNave(highest_len, 0.0), MxNerror(highest_len, 0.0);
-    double ave, error;
 
     // Thermalization
     if (thermalize)
@@ -337,7 +337,6 @@ void simulation1mod(int argc, char **argv)
     MxMdata.resize(highest_len, std::vector<double>(0));
     MxNdata.resize(highest_len, std::vector<double>(0));
     std::vector<double> MxMave(highest_len, 0.0), MxMerror(highest_len, 0.0), MxNave(highest_len, 0.0), MxNerror(highest_len, 0.0);
-    double ave, error;
 
     // Thermalization
     if (thermalize)
@@ -573,7 +572,7 @@ void simulation3mod(int argc, char **argv)
     std::ofstream higgsFile(datFolder + "higgssquare-m2-" + std::to_string(m2) + ".txt", std::ios_base::app);
     for (int i = 0; i < ldir[0]; i++)
     {
-        for (int j = 0; j < correlationData[i].size(); j++)
+        for (int j = 0; j < static_cast<int>(correlationData[i].size()); j++)
         {
             corrFile << m2 << " " << i << " " << correlationData[i][j] << std::endl;
         }
@@ -820,7 +819,6 @@ void boundaryConditionTest(int argc, char **argv)
         for (int i = 0; i < 4; i++)
         {
             int jump[4] = {0};
-            int jumpNone[4] = {};
             jump[i] = ldir[i];
             for (int j = 0; j < 5; j++)
             {
@@ -866,4 +864,93 @@ void indexTest()
         if (i != j)
             std::cout << i << " " << j << std::endl;
     }
+}
+
+void simulation5(int argc, char **argv)
+{
+    // Measure Polaykov loops, Wilson Rectangles, Higgs fields, Higgs correlators
+    // Thermalization
+    std::vector<std::vector<double>> MxMdata, MxNdata;
+    int highest_len = 3; // Highest length of Polyakov loop that is checked against for convergence
+    std::vector<double> MxMave(highest_len, 0.0), MxMerror(highest_len, 0.0), MxNave(highest_len, 0.0), MxNerror(highest_len, 0.0);
+
+    for (int i = 0; i < highest_len; i++) // Init data holding vectors
+    {
+        std::vector<double> tempdata1, tempdata2;
+        MxMdata.push_back(std::move(tempdata1));
+        MxNdata.push_back(std::move(tempdata2));
+    }
+    if (thermalize)
+    {
+        hotLattice();
+        for (int i = 0; i < 3000; i++)
+        {
+            metropolisHastingsSweep();
+        }
+    }
+    // Sweeps
+    iter_count = 0;
+    int sweep_between_obs = 1000, obs_between_checks = 100;
+    bool check;
+    do
+    {
+        ++iter_count;
+        for (int i = 0; i < obs_between_checks; i++)
+        {
+            for (int j = 0; j < sweep_between_obs; j++)
+            {
+                metropolisHastingsSweep();
+            }
+            midSimObservables();
+            for (int i = 0; i < highest_len; i++)
+            {
+                MxMdata[i].push_back(rectangleAverage(i + 1, i + 1));
+                MxNdata[i].push_back(rectangleAverage(i + 1, i));
+            }
+        }
+        // Write configuration to file
+        pushConfig(confFolder + identifier + ".bin");
+        // Statistics check for convergence
+        for (int i = 0; i < highest_len; i++)
+        {
+            computeJackknifeStatistics(MxMdata[i], 10, MxMave[i], MxMerror[i]);
+            computeJackknifeStatistics(MxNdata[i], 10, MxNave[i], MxNerror[i]);
+        }
+        for (auto &dat : MxMdata[0])
+        {
+            std::cout << dat << std::endl;
+        }
+        check = (std::abs(MxMerror[0] / MxMave[0]) > 0.05 || std::abs(MxMerror[1] / MxMave[1]) > 0.1 || std::abs(MxNerror[1] / MxNave[1]) > 0.1) && (iter_count < MAX_ITER);
+    } while (check);
+}
+
+void midSimObservables()
+{
+    // Measure Polaykov loops, Wilson Rectangles, Higgs fields, Higgs correlators
+    polyakovLines(datFolder + "polyakov" + identifier + ".dat", 1, 2);
+    for (int t = 1; t < lt; t++)
+    {
+        std::ofstream file(datFolder + "rect" + std::to_string(t) + "x" + std::to_string(t) + identifier + ".dat", std::ios::app);
+        file << std::setprecision(16) << std::fixed << std::scientific;
+        file << rectangleAverage(t, t) << std::endl;
+    }
+    for (int t = 2; t < lt; t++)
+    {
+        std::ofstream file(datFolder + "rect" + std::to_string(t) + "x" + std::to_string(t - 1) + identifier + ".dat", std::ios::app);
+        file << std::setprecision(16) << std::fixed << std::scientific;
+        file << rectangleAverage(t, t - 1) << std::endl;
+    }
+    std::ofstream higgsFile(datFolder + "higgsSquare" + identifier + ".dat", std::ios::app);
+    higgsFile << std::setprecision(16) << std::fixed << std::scientific;
+    higgsFile << higgsSquareAverage() << std::endl;
+    higgsFile.close();
+
+    std::ofstream higgsCorrFile(datFolder + "higgsCorr" + identifier + ".dat", std::ios::app);
+    for (int t = 0; t < lt; t++)
+    {
+        higgsCorrFile << t << " ";
+        higgsCorrFile << std::setprecision(16) << std::fixed << std::scientific;
+        higgsCorrFile << averageCorrelatorVolume(t) << "\n";
+    }
+    higgsCorrFile.close();
 }

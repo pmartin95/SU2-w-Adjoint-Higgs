@@ -10,14 +10,14 @@ int pushConfig(std::string filename)
     {
         for (int dir = 0; dir < 5; dir++)
         {
-            v.push_back(lattice[site_index].field[dir](0, 0).imag());
             v.push_back(lattice[site_index].field[dir](0, 0).real());
-            v.push_back(lattice[site_index].field[dir](0, 1).imag());
+            v.push_back(lattice[site_index].field[dir](0, 0).imag());
             v.push_back(lattice[site_index].field[dir](0, 1).real());
-            v.push_back(lattice[site_index].field[dir](1, 0).imag());
+            v.push_back(lattice[site_index].field[dir](0, 1).imag());
             v.push_back(lattice[site_index].field[dir](1, 0).real());
-            v.push_back(lattice[site_index].field[dir](1, 1).imag());
+            v.push_back(lattice[site_index].field[dir](1, 0).imag());
             v.push_back(lattice[site_index].field[dir](1, 1).real());
+            v.push_back(lattice[site_index].field[dir](1, 1).imag());
         }
     }
     conf.open(filename, std::ios::binary);
@@ -42,10 +42,15 @@ int pullConfig(std::string filename)
         j = 0;
         for (int i = 0; i < 5; i++)
         {
-            lattice[site_index].field[i](0, 0) = std::complex<double>(v[k + j++], v[k + j++]);
-            lattice[site_index].field[i](0, 1) = std::complex<double>(v[k + j++], v[k + j++]);
-            lattice[site_index].field[i](1, 0) = std::complex<double>(v[k + j++], v[k + j++]);
-            lattice[site_index].field[i](1, 1) = std::complex<double>(v[k + j++], v[k + j++]);
+
+            lattice[site_index].field[i](0, 0) = std::complex<double>(v[k + j], v[k + j + 1]);
+            j += 2;
+            lattice[site_index].field[i](0, 1) = std::complex<double>(v[k + j], v[k + j + 1]);
+            j += 2;
+            lattice[site_index].field[i](1, 0) = std::complex<double>(v[k + j], v[k + j + 1]);
+            j += 2;
+            lattice[site_index].field[i](1, 1) = std::complex<double>(v[k + j], v[k + j + 1]);
+            j += 2;
         }
     }
     return 0;
