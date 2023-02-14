@@ -8,3 +8,5 @@ includes/docs/.hgeol
 output/*.out
 dat/**
 configurations/**
+src/SU2_Pure.code-workspace
+python_scripts/__pycache__/jackknife.cpython-38.pyc
