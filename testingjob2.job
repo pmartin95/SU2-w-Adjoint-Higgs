@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# cd dat/testdata6
+# rm -rf *.txt
+# cd ../../
+
+# for dir in bin output configurations obj dat ;
+# do
+#     if  [ ! -d "$dir" ]
+#     then
+#         mkdir "$dir"
+#     fi
+# done
+
+
+# make clean
+# make -j
+parallel --dry-run --jobs 22 ./bin/main -beta {1} -m2 {2} -bc {3} '>' ./output/mainbeta{1}m2{2}bc{3}.out :::: beta_values.txt ::::+ m2_values.txt ::: p
+# parallel --jobs 24 ./bin/main -beta {} '>' ./output/main{}.out ::: $(seq 0.1 0.1 3.0)
+
+# cd dat/testdata6
+# ls
+# python3 local-analyze-Creutz.py
+# mv testCreutzRatio.png ./../../testCreutzRatio.png
+# cd ../../
