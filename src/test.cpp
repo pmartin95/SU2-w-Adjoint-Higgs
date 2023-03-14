@@ -752,6 +752,12 @@ void argumentInput(int argc, char **argv)
         }
     }
     lattice = new site[lsites];
+    lattice1_global = new site[lsites];
+    lattice2_global = new site[lsites];
+    plattice = new site[lsites];
+    plattice1_global = new site[lsites];
+    plattice2_global = new site[lsites];
+
     std::random_device r;
     rng.seed(r());
 }

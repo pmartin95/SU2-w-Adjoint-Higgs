@@ -10,7 +10,8 @@ typedef struct site
 } site;
 typedef void (*boundary_condition)(matrix &, int, int, int);
 
-extern site *lattice;
+extern site *lattice, *lattice1_global, *lattice2_global;
+extern site *plattice, *plattice1_global, *plattice2_global;
 
 extern boundary_condition bc;
 
@@ -42,3 +43,4 @@ extern std::string datFolder;
 extern std::string confFolder;
 extern std::string bcName;
 extern std::string identifier;
+extern matrix pauliMatrix[4];

@@ -2,7 +2,9 @@
 #include "global_decl.hpp"
 #pragma once
 double plaquette(int site_index, int (&shift)[4], int mu, int nu);
+double plaquette(site *lattice1, int site_index, int (&shift)[4], int mu, int nu);
 double plaquetteAverage();
+double plaquetteAverage(site * lattice1);
 double polyakovLine(int site_index);
 double polyakovLine(int site_index, int dir);
 void polyakovLines(std::string filename, int dir1, int dir2);

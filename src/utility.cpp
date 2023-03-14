@@ -32,3 +32,11 @@ bool verify::equivalent(const double &A, const double &B, double mult)
     double eps = std::numeric_limits<double>::epsilon();
     return std::abs(A - B) < eps * mult * std::max(1.0, std::max(std::abs(A), std::abs(B)));
 }
+
+void setupPauliMatrices()
+{
+    pauliMatrix[0] = matrix::Identity();
+    pauliMatrix[1] << 0, 1, 1, 0;
+    pauliMatrix[2] << 0, -I, I, 0;
+    pauliMatrix[3] << 1, 0, 0, -1;
+}

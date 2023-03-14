@@ -20,6 +20,20 @@ double plaquette(int site_index, int (&shift)[4], int mu, int nu)
     return 0.5 * temp.trace().real();
 }
 
+double plaquette(site *lattice1, int site_index, int (&shift)[4], int mu, int nu)
+{
+    int y[4], z[4];
+    copyCoordinates(shift, z);
+    copyCoordinates(shift, y);
+    y[mu]++;
+    z[nu]++;
+    matrix temp = callLatticeSite(lattice1, site_index, shift, mu);
+    temp *= callLatticeSite(lattice1, site_index, y, nu);
+    temp *= callLatticeSite(lattice1, site_index, z, mu).adjoint();
+    temp *= callLatticeSite(lattice1, site_index, shift, nu).adjoint();
+    return 0.5 * temp.trace().real();
+}
+
 double plaquetteAverage()
 {
     double accumulator = 0.0;
@@ -37,6 +51,22 @@ double plaquetteAverage()
     return accumulator / (lsites * 2 * 3);
 }
 
+double plaquetteAverage(site * lattice1)
+{
+    double accumulator = 0.0;
+    int jumpNone[4] = {0};
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        for (int nu = 0; nu < 4; nu++)
+        {
+            for (int mu = 0; mu < nu; mu++)
+            {
+                accumulator += plaquette(lattice1,site_index, jumpNone, mu, nu);
+            }
+        }
+    }
+    return accumulator / (lsites * 2 * 3);
+}
 double rectangle(int site_index, int (&shift)[4], int mu, int nu, int mu_len, int nu_len)
 {
     int y[4], z[4];

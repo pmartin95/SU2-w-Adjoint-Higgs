@@ -22,7 +22,10 @@
 #include "test.hpp"
 #include "rand.hpp"
 #include "action.hpp"
-site *lattice;
+#include "hmc.hpp"
+#include "stopwatch.hpp"
+site *lattice, *lattice1_global, *lattice2_global;
+site *plattice, *plattice1_global, *plattice2_global;
 double beta = 2.3;
 double lambda = 0.1;
 double m2 = -2.0;
@@ -43,10 +46,11 @@ std::mt19937 rng;
 std::uniform_real_distribution<double> gen(0.0, 1.0);
 std::normal_distribution<double> gen_normal(0.0, 1.0);
 boundary_condition bc = &ptwist;
-std::string datFolder = "./dat/testdata7/";
+std::string datFolder = "./dat/testdataHMC/";
 std::string confFolder = "./configurations/";
 std::string bcName = "p";
 std::string identifier;
+matrix pauliMatrix[4];
 int main(int argc, char **argv)
 {
     if (!boost::filesystem::exists(boost::filesystem::path(datFolder)))
@@ -56,7 +60,30 @@ int main(int argc, char **argv)
         boost::filesystem::create_directory(boost::filesystem::path(confFolder));
     // Boilerplate
     argumentInput(argc, argv);
-    simulation5(argc, argv);
+    // Initialize the lattice
+    hotLattice();
+    std::vector<double> HMC_exp;
+    Timer time1;
+    time1.stopwatchStart();
+    HMC(50);
+    int iter = (int)time1.stopwatchReadSeconds() * 60 * 60 * 3;
+
+    for (int i = 0; i < 100; i++)
+    {
+        HMC_warmup(20);
+    }
+    for (int i = 0; i < iter; i++)
+    {
+        HMC_exp.push_back(HMC(50));
+    }
+    std::cout << "HMC average: " << average(HMC_exp) << std::endl;
+    // Clean up
     delete[] lattice;
+    delete[] lattice1_global;
+    delete[] lattice2_global;
+    delete[] plattice;
+    delete[] plattice1_global;
+    delete[] plattice2_global;
+
     return 0;
 }

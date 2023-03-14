@@ -1,6 +1,8 @@
 #include "global_decl.hpp"
 #pragma once
+
 double WilsonAction();
+double WilsonAction(site *lattice1);
 double WilsonActionPartial(int site_index, int mu);
 double GeorgiGlashowHiggsPotential();
 double GeorgiGlashowHiggsPotentialSite(int site_index);

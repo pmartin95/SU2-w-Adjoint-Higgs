@@ -123,6 +123,24 @@ matrix callLatticeSite(int ref_site, int (&jump)[4], int dir)
     callLatticeSite(m, ref_site, jump, dir);
     return m;
 }
+
+void callLatticeSite(site *lattice1, matrix &m, int ref_site, int (&jump)[4], int dir)
+{
+    int num_twists[4];
+    int new_site = siteJump(ref_site, jump, num_twists);
+    m = lattice1[new_site].field[dir];
+    for (int i = 0; i < 4; i++)
+    {
+        bc(m, dir, i, num_twists[i]);
+    }
+}
+matrix callLatticeSite(site *lattice1, int ref_site, int (&jump)[4], int dir)
+{
+    matrix m;
+    callLatticeSite(lattice1, m, ref_site, jump, dir);
+    return m;
+}
+
 // dir refers to the direction traveled
 void ptwist(matrix &m, int mat_num, int dir, int num_twist) // aka no twist, just periodic b.c.
 {

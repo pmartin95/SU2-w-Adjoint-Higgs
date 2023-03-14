@@ -18,6 +18,22 @@ double WilsonAction()
     }
     return beta * accumulator;
 }
+double WilsonAction(site *lattice1)
+{
+    double accumulator = 0.0;
+    int jumpNone[4] = {0};
+    for (int site_index = 0; site_index < lsites; site_index++)
+    {
+        for (int nu = 0; nu < 4; nu++)
+        {
+            for (int mu = 0; mu < nu; mu++)
+            {
+                accumulator += (1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu));
+            }
+        }
+    }
+    return beta * accumulator;
+}
 double WilsonActionPartial(int site_index, int mu)
 {
     double accumulator = 0.0;

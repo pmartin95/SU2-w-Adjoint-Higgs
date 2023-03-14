@@ -11,3 +11,5 @@ namespace verify
     bool equivalent(const std::complex<double> &A, const std::complex<double> &B, double epsilon);
     bool equivalent(const double &A, const double &B, double mult);
 }
+
+void setupPauliMatrices();
