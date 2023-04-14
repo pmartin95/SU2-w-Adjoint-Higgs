@@ -1,7 +1,7 @@
 #include "hmc.hpp"
 
 // update lattice momenta of lattice 1
-void updateLatticeMomenta(site *current_momenta, site *current_lattice, site *next_momenta, double step_size)
+void updateLatticeMomenta(site *&current_momenta, site *&current_lattice, site *&next_momenta, double step_size)
 {
     for (int i = 0; i < lsites; i++)
     {
@@ -12,20 +12,21 @@ void updateLatticeMomenta(site *current_momenta, site *current_lattice, site *ne
             next_momenta[i].field[mu] = current_momenta[i].field[mu] - step_size * force;
         }
     }
-    std::swap(*current_momenta, *next_momenta);
+    std::swap(current_momenta, next_momenta);
 }
 // update lattice fields of lattice 1
-void updateLatticeFields(site *current_lattice, site *current_momenta, site *next_lattice, double step_size)
+void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&next_lattice, double step_size)
 {
     for (int i = 0; i < lsites; i++)
     {
         for (int mu = 0; mu < 4; mu++)
         {
-            next_lattice[i].field[mu] = expCK(step_size * current_momenta[i].field[mu]) * current_lattice[i].field[mu]; // Seems like  Re and + is best so far
+            next_lattice[i].field[mu] = expCK(step_size * I * current_momenta[i].field[mu]) * current_lattice[i].field[mu]; // Seems like  Re and + is best so far
+            projectSU2(next_lattice[i].field[mu]);
         }
     }
 
-    std::swap(*current_lattice, *next_lattice);
+    std::swap(current_lattice, next_lattice);
 }
 
 void HMC_warmup(int t)
@@ -35,11 +36,12 @@ void HMC_warmup(int t)
     // Copy lattice  to lattice 1 and 2
     copyLattice(lattice, lattice1_global);
     copyLattice(plattice, plattice1_global);
+    copyLattice(lattice, lattice2_global);
+    copyLattice(plattice, plattice2_global);
     double t_step = 1.0 / t;
     site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
     site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
     // random momenta
-    randomMomentumLattice(current_momenta);
     // Update lattice momenta
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
 
@@ -51,25 +53,28 @@ void HMC_warmup(int t)
     }
     updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
-    // Calculate Hamiltonian
-    double H1 = hamiltonian(lattice, plattice);
-    double H2 = hamiltonian(current_lattice, current_momenta);
+
     copyLattice(current_lattice, lattice);
+    copyLattice(current_momenta, plattice);
 }
 
 // perform an HMC with t time intervals
 double HMC(int t)
 {
-    randomMomentumLattice(plattice);
+    double t_step = 1.0 / static_cast<double>(t);
     // Copy lattice  to lattice 1 and 2
     copyLattice(lattice, lattice1_global);
-    copyLattice(plattice, plattice1_global);
-    double t_step = 1.0 / t;
+    copyLattice(lattice, lattice2_global);
+
     site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
     site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
+
     // random momenta
     randomMomentumLattice(current_momenta);
+    copyLattice(current_momenta, plattice);
+
     // Update lattice momenta
+
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
 
     // Update lattice fields
@@ -83,11 +88,15 @@ double HMC(int t)
     // Calculate Hamiltonian
     double H1 = hamiltonian(lattice, plattice);
     double H2 = hamiltonian(current_lattice, current_momenta);
-
+    std::cout << "H1 = " << H1 << " H2 = " << H2 << std::endl;
+    std::cout << "P1 = " << totalMomentum(plattice) << " P2 = " << totalMomentum(current_momenta) << std::endl;
+    std::cout << "K1 =" << WilsonAction(lattice) << " K2 = " << WilsonAction(current_lattice) << std::endl;
     // Accept or reject
     if (H2 <= H1)
     {
         copyLattice(current_lattice, lattice);
+        copyLattice(current_momenta, plattice);
+        Naccept++;
     }
     else
     {
@@ -96,6 +105,13 @@ double HMC(int t)
         if (r < std::exp(H1 - H2))
         {
             copyLattice(current_lattice, lattice);
+            copyLattice(current_momenta, plattice);
+            Naccept++;
+            std::cout << "Accepted exp" << std::endl;
+        }
+        else
+        {
+            Nreject++;
         }
     }
     return std::exp(H2 - H1);
@@ -169,6 +185,19 @@ const matrix expCK(const matrix &m)
     return expm;
 }
 
+double totalMomentum(site *plattice1)
+{
+    double total = 0.0;
+    for (int i = 0; i < lsites; i++)
+    {
+        for (int mu = 0; mu < 5; mu++)
+        {
+            total += (plattice1[i].field[mu] * plattice1[i].field[mu]).trace().real();
+        }
+    }
+    return total;
+}
+
 // Hamiltonian of the system
 double hamiltonian(site *lattice1, site *plattice1)
 {
@@ -177,7 +206,7 @@ double hamiltonian(site *lattice1, site *plattice1)
     {
         for (int mu = 0; mu < 5; mu++)
         {
-            H += 0.5 * plattice1[i].field[mu].trace().real();
+            H += 0.5 * (plattice1[i].field[mu] * plattice1[i].field[mu]).trace().real();
         }
     }
     H += WilsonAction(lattice1);
@@ -206,7 +235,7 @@ void randomMomentumLattice(site *lattice1)
         for (int mu = 0; mu < 5; mu++)
         {
             randomHermitianMatrix(lattice1[i].field[mu]);
-            lattice1[i].field[mu] = lattice1[i].field[mu] * I;
+            lattice1[i].field[mu] = lattice1[i].field[mu];
         }
     }
 }
