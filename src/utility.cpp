@@ -1,4 +1,5 @@
 #include "utility.hpp"
+#include <iostream>
 
 bool verify::equivalent(const matrix &A, const matrix &B)
 {
@@ -39,4 +40,51 @@ void setupPauliMatrices()
     pauliMatrix[1] << 0, 1, 1, 0;
     pauliMatrix[2] << 0, -I, I, 0;
     pauliMatrix[3] << 1, 0, 0, -1;
+}
+
+// Function to check if a matrix is an SU(2) matrix
+bool isSU2(const matrix &m, double tolerance)
+{
+    // Check if the determinant is close to 1
+    if (std::abs(m.determinant().real() - 1.0) > tolerance)
+    {
+        std::cout << m << std::endl;
+        std::cout << "Determinant is not close to 1: " << m.determinant() - 1.0 << std::endl;
+        return false;
+    }
+
+    // Check if the matrix is unitary: m * m.adjoint() should be the identity matrix
+    matrix product = m * m.adjoint();
+    if (!verify::equivalent(product, matrix::Identity(), tolerance / std::numeric_limits<double>::epsilon()))
+    {
+        std::cout << "Matrix is not unitary: " << std::endl;
+        std::cout << product - matrix::Identity() << std::endl;
+        return false;
+    }
+
+    return true;
+}
+bool isLatticeSU2(const site *l, double tolerance)
+{
+    for (int i = 0; i < lsites; i++)
+    {
+        for (int dir = 0; dir < 4; dir++)
+        {
+            if (!isSU2(l[i].field[dir], tolerance))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void projectSU2(matrix &m, double tolerance)
+{
+    // Project the matrix onto SU(2)
+    std::complex<double> det = m.determinant();
+    while (std::abs(det.real() - 1.0) > tolerance && det.real() > 0.0)
+    {
+        m /= std::sqrt(det);
+    }
 }
