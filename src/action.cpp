@@ -1,6 +1,7 @@
 #include "action.hpp"
 #include "observables.hpp"
 #include "lattice_ops.hpp"
+#include <iostream>
 
 double WilsonAction()
 {
@@ -28,6 +29,12 @@ double WilsonAction(site *lattice1)
         {
             for (int mu = 0; mu < nu; mu++)
             {
+                if (std::abs(1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu)) > 1.0)
+                {
+                    std::cout << "Plaquette is rather large.\n";
+                    std::cout << 1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu) << "\n";
+                }
+
                 accumulator += (1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu));
             }
         }
