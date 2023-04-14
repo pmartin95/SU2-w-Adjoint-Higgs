@@ -1,5 +1,7 @@
 #include "test.hpp"
 #include <iomanip>
+#include "hmc.hpp"
+#include "lattice_ops.hpp"
 void simulation1(int argc, char **argv)
 {
     // arguments
@@ -959,4 +961,89 @@ void midSimObservables()
         higgsCorrFile << averageCorrelatorVolume(t) << "\n";
     }
     higgsCorrFile.close();
+}
+
+void simulationHMC1(int argc, char **argv)
+{
+    // Initialize variables
+    int sweep_between_obs = 40;
+    int obs_between_checks = 100;
+    int highest_len = 3; // Highest length of Polyakov loop that is checked against for convergence
+    int iter_count = 0;
+    bool check;
+
+    // Measure Polaykov loops, Wilson Rectangles, Higgs fields, Higgs correlators
+    // Initialize data structures for analysis
+    std::vector<std::vector<double>> MxMdata, MxNdata;
+    std::vector<double> MxMave(highest_len, 0.0), MxMerror(highest_len, 0.0), MxNave(highest_len, 0.0), MxNerror(highest_len, 0.0);
+
+    for (int i = 0; i < highest_len; i++) // Init data holding vectors
+    {
+        std::vector<double> tempdata1, tempdata2;
+        MxMdata.push_back(std::move(tempdata1));
+        MxNdata.push_back(std::move(tempdata2));
+    }
+
+    // Thermalization
+    if (isLatticeSU2(lattice))
+    {
+        std::cout << "lattice is SU(2).\n";
+    }
+    else
+    {
+        exit(1);
+    }
+    if (thermalize)
+    {
+        hotLattice();
+        for (int i = 0; i < 30; i++)
+        {
+            HMC_warmup(1000);
+        }
+    }
+    // Thermalization
+    if (isLatticeSU2(lattice))
+    {
+        std::cout << "lattice is SU(2).\n";
+    }
+    else
+    {
+        exit(1);
+    }
+    // Main simulation loop
+    do
+    {
+        +iter_count;
+
+        // Perform sweeps and collect observables
+        for (int i = 0; i < obs_between_checks; i++)
+        {
+            for (int j = 0; j < sweep_between_obs; j++)
+            {
+                // std::cout << WilsonAction(lattice) << std::endl;
+                HMC(1000);
+            }
+            std::cout << "Acceptance rate: " << static_cast<double>(Naccept) / static_cast<double>(Naccept + Nreject) << std::endl;
+            Naccept = 0;
+            Nreject = 0;
+            midSimObservables();
+            for (int i = 0; i < highest_len; i++)
+            {
+                MxMdata[i].push_back(rectangleAverage(i + 1, i + 1));
+                MxNdata[i].push_back(rectangleAverage(i + 1, i));
+            }
+        }
+
+        // Save configuration to file
+        pushConfig(confFolder + identifier + ".bin");
+
+        // Check for convergence
+        for (int i = 0; i < highest_len; i++)
+        {
+            computeJackknifeStatistics(MxMdata[i], 10, MxMave[i], MxMerror[i]);
+            computeJackknifeStatistics(MxNdata[i], 10, MxNave[i], MxNerror[i]);
+        }
+
+        check = (std::abs(MxMerror[0] / MxMave[0]) > 0.05 || std::abs(MxMerror[1] / MxMave[1]) > 0.1 || std::abs(MxNerror[1] / MxNave[1]) > 0.1) && (iter_count < MAX_ITER);
+    } while (check);
 }
