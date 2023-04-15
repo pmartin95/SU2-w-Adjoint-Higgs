@@ -7,19 +7,7 @@
 // Calculate the Wilson action of the current lattice configuration
 double WilsonAction()
 {
-    double accumulator = 0.0;
-    int jumpNone[4] = {0};
-    for (int site_index = 0; site_index < lsites; site_index++)
-    {
-        for (int nu = 0; nu < 4; nu++)
-        {
-            for (int mu = 0; mu < nu; mu++)
-            {
-                accumulator += (1.0 - plaquette(site_index, jumpNone, mu, nu));
-            }
-        }
-    }
-    return beta * accumulator;
+    return WilsonAction(lattice);
 }
 
 // Calculate the Wilson action of a given lattice configuration
@@ -33,14 +21,6 @@ double WilsonAction(site *lattice1)
         {
             for (int mu = 0; mu < nu; mu++)
             {
-                if (std::abs(1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu)) > 2.0)
-                {
-                    std::cout << "Plaquette is behaving strangely.\n";
-                    std::cout << 2.0 - plaquette(lattice1, site_index, jumpNone, mu, nu) << "\n";
-                    std::cout << isLatticeSU2(lattice1) << "\n";
-                    exit(1);
-                }
-
                 accumulator += (1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu));
             }
         }
