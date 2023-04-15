@@ -9,6 +9,11 @@ void updateLatticeMomenta(site *&current_momenta, site *&current_lattice, site *
         {
             matrix force;
             linkFieldForce(current_lattice, i, mu, force);
+            if (!isHermitian(force))
+            {
+                std::cout << "force is not Hermitian" << std::endl;
+                exit(1);
+            }
             next_momenta[i].field[mu] = current_momenta[i].field[mu] - step_size * force;
         }
     }
@@ -21,8 +26,13 @@ void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&
     {
         for (int mu = 0; mu < 4; mu++)
         {
-            next_lattice[i].field[mu] = expCK(step_size * I * current_momenta[i].field[mu]) * current_lattice[i].field[mu]; // Seems like  Re and + is best so far
-            projectSU2(next_lattice[i].field[mu]);
+            if (!isHermitian(current_momenta[i].field[mu]))
+            {
+                std::cout << "Momentum is not Hermitian" << std::endl;
+                std::cout << current_momenta[i].field[mu] << std::endl;
+                exit(1);
+            }
+            next_lattice[i].field[mu] = expCK(-step_size * I * current_momenta[i].field[mu]) * current_lattice[i].field[mu]; // Seems like  Re and + is best so far
         }
     }
 
@@ -32,19 +42,17 @@ void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&
 void HMC_warmup(int t)
 {
 
-    randomMomentumLattice(plattice);
-    // Copy lattice  to lattice 1 and 2
-    copyLattice(lattice, lattice1_global);
-    copyLattice(plattice, plattice1_global);
-    copyLattice(lattice, lattice2_global);
-    copyLattice(plattice, plattice2_global);
     double t_step = 1.0 / t;
     site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
     site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
+
+    randomMomentumLattice(plattice);
+    copyLattice(lattice, current_lattice);
+    copyLattice(plattice, current_momenta);
+
     // random momenta
     // Update lattice momenta
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
-
     // Update lattice fields
     for (int i = 0; i < t - 1; i++)
     {
@@ -53,7 +61,6 @@ void HMC_warmup(int t)
     }
     updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
-
     copyLattice(current_lattice, lattice);
     copyLattice(current_momenta, plattice);
 }
@@ -88,9 +95,8 @@ double HMC(int t)
     // Calculate Hamiltonian
     double H1 = hamiltonian(lattice, plattice);
     double H2 = hamiltonian(current_lattice, current_momenta);
-    std::cout << "H1 = " << H1 << " H2 = " << H2 << std::endl;
-    std::cout << "P1 = " << totalMomentum(plattice) << " P2 = " << totalMomentum(current_momenta) << std::endl;
-    std::cout << "K1 =" << WilsonAction(lattice) << " K2 = " << WilsonAction(current_lattice) << std::endl;
+    std::cout << "Hdiff: " << H2 - H1 << std::endl;
+
     // Accept or reject
     if (H2 <= H1)
     {
@@ -136,7 +142,7 @@ void linkFieldForce(site *lattice1, int site_index, int mu, matrix &force)
     matrix staple = gaugeFieldStaple(lattice1, site_index, mu);
     matrix link = callLatticeSite(lattice1, site_index, jumpNone, mu);
     matrix temp = link * staple;
-    force = beta / 4.0 * antiHermitianTraceless(temp);
+    force = beta / 4.0 * antiHermitianTraceless(temp) * I;
 }
 const matrix linkFieldForce(site *lattice1, int site_index, int mu)
 {
@@ -172,11 +178,11 @@ const matrix gaugeFieldStaple(site *lattice1, int site_index, int mu)
     return staple;
 }
 
-// Cayley-Klein version of exponential function for traceless Hermitian matrices multiplied by a complex factor z
+// Cayley-Klein version of exponential function for traceless anti-Hermitian matrices
 void expCK(const matrix &m, matrix &expm)
 {
     std::complex<double> M = std::sqrt(m.determinant());
-    expm = std::cosh(M) * matrix::Identity() + std::sinh(M) / M * m;
+    expm = std::cos(M) * matrix::Identity() + std::sin(M) / M * m;
 }
 const matrix expCK(const matrix &m)
 {
@@ -213,7 +219,7 @@ double hamiltonian(site *lattice1, site *plattice1)
     return H;
 }
 
-// generate random normally distributed Hermitian matrices
+// generate random normally distributed Hermitian matrices, traceless
 void randomHermitianMatrix(matrix &m)
 {
     double a, b, c;
@@ -235,7 +241,6 @@ void randomMomentumLattice(site *lattice1)
         for (int mu = 0; mu < 5; mu++)
         {
             randomHermitianMatrix(lattice1[i].field[mu]);
-            lattice1[i].field[mu] = lattice1[i].field[mu];
         }
     }
 }
