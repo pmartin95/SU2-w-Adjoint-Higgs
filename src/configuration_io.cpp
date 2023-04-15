@@ -5,6 +5,8 @@
 int pushConfig(std::string filename)
 {
     std::vector<double> v;
+    constexpr int doublesPerSite = 5 /* matrices per site */ * 8 /*doubles per matrix*/;
+    v.reserve(lsites * doublesPerSite);
     std::ofstream conf;
     for (int site_index = 0; site_index < lsites; site_index++)
     {
@@ -21,6 +23,10 @@ int pushConfig(std::string filename)
         }
     }
     conf.open(filename, std::ios::binary);
+    if (!conf.is_open())
+    {
+        return -1;
+    }
     conf.write(reinterpret_cast<const char *>(&v[0]), v.size() * sizeof(v[0]));
     conf.close();
     return 0;
