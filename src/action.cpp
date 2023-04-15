@@ -1,8 +1,10 @@
 #include "action.hpp"
 #include "observables.hpp"
+#include "utility.hpp"
 #include "lattice_ops.hpp"
 #include <iostream>
 
+// Calculate the Wilson action of the current lattice configuration
 double WilsonAction()
 {
     double accumulator = 0.0;
@@ -19,6 +21,8 @@ double WilsonAction()
     }
     return beta * accumulator;
 }
+
+// Calculate the Wilson action of a given lattice configuration
 double WilsonAction(site *lattice1)
 {
     double accumulator = 0.0;
@@ -29,10 +33,12 @@ double WilsonAction(site *lattice1)
         {
             for (int mu = 0; mu < nu; mu++)
             {
-                if (std::abs(1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu)) > 1.0)
+                if (std::abs(1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu)) > 2.0)
                 {
-                    std::cout << "Plaquette is rather large.\n";
-                    std::cout << 1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu) << "\n";
+                    std::cout << "Plaquette is behaving strangely.\n";
+                    std::cout << 2.0 - plaquette(lattice1, site_index, jumpNone, mu, nu) << "\n";
+                    std::cout << isLatticeSU2(lattice1) << "\n";
+                    exit(1);
                 }
 
                 accumulator += (1.0 - plaquette(lattice1, site_index, jumpNone, mu, nu));
@@ -41,6 +47,8 @@ double WilsonAction(site *lattice1)
     }
     return beta * accumulator;
 }
+
+// Calculate the partial Wilson action for a specific site and direction
 double WilsonActionPartial(int site_index, int mu)
 {
     double accumulator = 0.0;
@@ -58,6 +66,7 @@ double WilsonActionPartial(int site_index, int mu)
     return -beta * accumulator;
 }
 
+// Calculate the Georgi-Glashow Higgs potential for the current lattice configuration
 double GeorgiGlashowHiggsPotential()
 {
     double accumulatorLambda = 0.0;
@@ -75,6 +84,7 @@ double GeorgiGlashowHiggsPotential()
     return m2 * accumulatorm2 + lambda * accumulatorLambda;
 }
 
+// Calculate the Georgi-Glashow Higgs potential for a specific site
 double GeorgiGlashowHiggsPotentialSite(int site_index)
 {
     double tmp = (lattice[site_index].field[4] * lattice[site_index].field[4]).trace().real();
@@ -82,6 +92,7 @@ double GeorgiGlashowHiggsPotentialSite(int site_index)
 }
 
 //! Investigate this term
+// Calculate the Georgi-Glashow Higgs kinetic term for the current lattice configuration
 double GeorgiGlashowHiggsKinetic()
 {
     double accumulator = 0.0;
@@ -97,7 +108,9 @@ double GeorgiGlashowHiggsKinetic()
     }
     return 2.0 * kappa * accumulator;
 }
+
 //! Investigate this term
+// Calculate the Georgi-Glashow Higgs kinetic term for a specific site
 double GeorgiGlashowHiggsKineticSite(int site_index)
 {
     double accumulator;
@@ -114,25 +127,34 @@ double GeorgiGlashowHiggsKineticSite(int site_index)
     }
     return 2.0 * kappa * accumulator;
 }
+
 //! Investigate this term
+// Calculate the Georgi-Glashow Higgs kinetic term for a specific site and link direction
 double GeorgiGlashowHiggsKineticSiteOneLink(int site_index, int dir)
 {
     return -2.0 * kappa * HiggsMixedTerm(site_index, dir);
 }
+
+// Calculate the total Georgi-Glashow action for the current lattice configuration
 double GeorgiGlashowAction()
 {
     return WilsonAction() + GeorgiGlashowHiggsPotential() + GeorgiGlashowHiggsKinetic();
 }
 
+// Calculate the partial Georgi-Glashow action for a specific site and link direction
 double GeorgiGlashowPartialActionLink(int site_index, int dir)
 {
     return WilsonActionPartial(site_index, dir) + GeorgiGlashowHiggsKineticSiteOneLink(site_index, dir);
 }
+
+// Calculate the partial Georgi-Glashow action for a specific site
 double GeorgiGlashowPartialActionHiggs(int site_index)
 {
     return GeorgiGlashowHiggsKineticSite(site_index) + GeorgiGlashowHiggsPotentialSite(site_index);
 }
+
 //! Investigate this term
+// Calculate the Higgs mixed term for a specific site and direction
 double HiggsMixedTerm(int site_index, int dir) // dir = mu,  Tr( \Phi(x) U_{\mu}(x)  \Phi(x+\mu)  U_{\mu}^{\adjoint}(x) )
 {
     int x[4], jump_index;
