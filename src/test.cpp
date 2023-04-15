@@ -983,37 +983,22 @@ void simulationHMC1(int argc, char **argv)
         MxMdata.push_back(std::move(tempdata1));
         MxNdata.push_back(std::move(tempdata2));
     }
-
+    hotLattice();
     // Thermalization
-    if (isLatticeSU2(lattice))
-    {
-        std::cout << "lattice is SU(2).\n";
-    }
-    else
-    {
-        exit(1);
-    }
     if (thermalize)
     {
         hotLattice();
-        for (int i = 0; i < 30; i++)
+        for (int i = 0; i < 50; i++)
         {
-            HMC_warmup(1000);
+            HMC_warmup(20);
         }
     }
     // Thermalization
-    if (isLatticeSU2(lattice))
-    {
-        std::cout << "lattice is SU(2).\n";
-    }
-    else
-    {
-        exit(1);
-    }
+
     // Main simulation loop
     do
     {
-        +iter_count;
+        ++iter_count;
 
         // Perform sweeps and collect observables
         for (int i = 0; i < obs_between_checks; i++)
@@ -1021,7 +1006,7 @@ void simulationHMC1(int argc, char **argv)
             for (int j = 0; j < sweep_between_obs; j++)
             {
                 // std::cout << WilsonAction(lattice) << std::endl;
-                HMC(1000);
+                HMC(20);
             }
             std::cout << "Acceptance rate: " << static_cast<double>(Naccept) / static_cast<double>(Naccept + Nreject) << std::endl;
             Naccept = 0;
@@ -1046,4 +1031,44 @@ void simulationHMC1(int argc, char **argv)
 
         check = (std::abs(MxMerror[0] / MxMave[0]) > 0.05 || std::abs(MxMerror[1] / MxMave[1]) > 0.1 || std::abs(MxNerror[1] / MxNave[1]) > 0.1) && (iter_count < MAX_ITER);
     } while (check);
+}
+
+void testExpCK(int num_tests)
+{
+    std::mt19937 gen(42);                               // Seed the random number generator with a constant for reproducibility
+    std::uniform_real_distribution<double> dist(-1, 1); // Uniform distribution between -1 and 1
+
+    for (int test = 0; test < num_tests; test++)
+    {
+        // Generate a random traceless Hermitian matrix
+        matrix H;
+        double realDiagonal = dist(gen);
+        H(0, 0) = std::complex<double>(realDiagonal, 0);
+        H(1, 1) = std::complex<double>(-realDiagonal, 0);
+        std::complex<double> offDiagonal(dist(gen), dist(gen));
+        H(0, 1) = offDiagonal;
+        H(1, 0) = std::conj(offDiagonal);
+
+        // Generate a random constant
+        double x = dist(gen);
+        double t = dist(gen);
+
+        // Compute the exponentiated matrix
+        matrix result;
+        expCK((x + t * I) * H, result);
+
+        // Check if the output is SU(2)
+        if (!isSU2(result))
+        {
+            std::cout << "Test failed for t = " << t << " and H = \n"
+                      << H << std::endl;
+            std::cout << "Result = \n"
+                      << result << std::endl;
+        }
+        else
+        {
+            // std::cout << "Test passed for t = " << t << " and H = \n"
+            //           << H << std::endl;
+        }
+    }
 }

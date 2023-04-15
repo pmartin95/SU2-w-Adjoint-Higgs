@@ -34,3 +34,4 @@ void indexTest();
 void simulation5(int argc, char **argv);
 void midSimObservables();
 void simulationHMC1(int argc, char **argv);
+void testExpCK(int num_tests);
