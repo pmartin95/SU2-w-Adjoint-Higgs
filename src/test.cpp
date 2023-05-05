@@ -1006,12 +1006,13 @@ void simulationHMC1(int argc, char **argv)
             for (int j = 0; j < sweep_between_obs; j++)
             {
                 // std::cout << WilsonAction(lattice) << std::endl;
-                HMC(20);
+                HMC(1000);
+                std::cout << plaquetteAverage() << std::endl;
             }
             std::cout << "Acceptance rate: " << static_cast<double>(Naccept) / static_cast<double>(Naccept + Nreject) << std::endl;
             Naccept = 0;
             Nreject = 0;
-            midSimObservables();
+            // midSimObservables(); //! pasting this out for now. All I want to do is keep track of plaquettes
             for (int i = 0; i < highest_len; i++)
             {
                 MxMdata[i].push_back(rectangleAverage(i + 1, i + 1));
@@ -1050,12 +1051,12 @@ void testExpCK(int num_tests)
         H(1, 0) = std::conj(offDiagonal);
 
         // Generate a random constant
-        double x = dist(gen);
+
         double t = dist(gen);
 
         // Compute the exponentiated matrix
         matrix result;
-        expCK((x + t * I) * H, result);
+        expCK(t * I * H, result);
 
         // Check if the output is SU(2)
         if (!isSU2(result))

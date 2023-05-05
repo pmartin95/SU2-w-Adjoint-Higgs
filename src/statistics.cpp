@@ -1,41 +1,32 @@
 #include "statistics.hpp"
-
+#include <numeric>
 double average(const std::vector<double> &input)
 {
-    double temp;
-    temp = sumVec(input) / static_cast<double>(input.size());
-    return temp;
+    return std::accumulate(input.begin(), input.end(), 0.0) / input.size();
 }
 
 matrix average(const std::vector<matrix> &input)
 {
-    matrix temp = matrix::Zero();
-    for (auto &x : input)
+    matrix sum = matrix::Zero();
+    for (const auto &m : input)
     {
-        temp += x;
+        sum += m;
     }
-    return temp / input.size();
+    return sum / input.size();
 }
 
 double sumVec(const std::vector<double> &input)
 {
-    double temp_sum = 0.0;
-    int vec_size = static_cast<int>(input.size());
-
-    for (int i = 0; i < vec_size; i++)
-        temp_sum += input[i];
-    return temp_sum;
+    return std::accumulate(input.begin(), input.end(), 0.0);
 }
 
 int computeJackknifeStatistics(const std::vector<double> &inputData, int setLength, double &Jackknife_ave, double &Jackknife_error)
 {
     if (inputData.size() % setLength != 0)
         return JACKKNIFE_NO_DIVIDE;
+
+    int numSets = inputData.size() / static_cast<long unsigned int>(setLength);
     std::vector<double> holdingVector;
-
-    int numSets;
-    numSets = inputData.size() / static_cast<long unsigned int>(setLength);
-
     std::vector<double> setOfAverages(numSets, 0.0);
     for (int i = 0; i < numSets; i++)
     {

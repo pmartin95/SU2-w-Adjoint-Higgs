@@ -24,6 +24,7 @@
 #include "action.hpp"
 #include "hmc.hpp"
 #include "stopwatch.hpp"
+#include "utility.hpp"
 site *lattice, *lattice1_global, *lattice2_global;
 site *plattice, *plattice1_global, *plattice2_global;
 double beta = 2.3;
@@ -35,7 +36,7 @@ int iter_count = 0;
 int Naccept = 0, Nreject = 0;
 int NacceptLink = 0, NrejectLink = 0;
 int NacceptHiggs = 0, NrejectHiggs = 0;
-int l = 10, lt = 10, lsites = l * l * l * lt;
+int l = 4, lt = 4, lsites = l * l * l * lt;
 int ldir[4] = {lt, l, l, l};
 bool thermalize = true;
 bool configSteps = true;
@@ -46,13 +47,14 @@ std::mt19937 rng;
 std::uniform_real_distribution<double> gen(0.0, 1.0);
 std::normal_distribution<double> gen_normal(0.0, 1.0);
 boundary_condition bc = &ptwist;
-std::string datFolder = "./dat/testdataHMC/";
+std::string datFolder = "./dat/testdataHMC3/";
 std::string confFolder = "./configurations/";
 std::string bcName = "p";
 std::string identifier;
 matrix pauliMatrix[4];
 int main(int argc, char **argv)
 {
+
     if (!boost::filesystem::exists(boost::filesystem::path(datFolder)))
         boost::filesystem::create_directory(boost::filesystem::path(datFolder));
 
@@ -60,23 +62,9 @@ int main(int argc, char **argv)
         boost::filesystem::create_directory(boost::filesystem::path(confFolder));
     // Boilerplate
     argumentInput(argc, argv);
-    // Initialize the lattice
-    hotLattice();
-    std::vector<double> HMC_exp;
-    Timer time1;
-    time1.stopwatchStart();
-    HMC(50);
-    int iter = (int)time1.stopwatchReadSeconds() * 60 * 60 * 3;
 
-    for (int i = 0; i < 100; i++)
-    {
-        HMC_warmup(20);
-    }
-    for (int i = 0; i < iter; i++)
-    {
-        HMC_exp.push_back(HMC(50));
-    }
-    std::cout << "HMC average: " << average(HMC_exp) << std::endl;
+    simulationHMC1(argc, argv);
+
     // Clean up
     delete[] lattice;
     delete[] lattice1_global;
