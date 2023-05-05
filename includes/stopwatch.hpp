@@ -11,7 +11,7 @@ public:
 
 private:
     std::chrono::high_resolution_clock::time_point myStartTime;
-}
+};
 
 class TimerOld
 {
@@ -22,4 +22,3 @@ public:
 private:
     struct timeval myStartTime;
 };
-
