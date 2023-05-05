@@ -4,8 +4,9 @@ obj/**
 *.txt
 *.dat
 *.png
-includes/docs/.hgeol
+includes/docs/**
 output/*.out
+build/**
 dat/**
 configurations/**
 src/SU2_Pure.code-workspace
