@@ -1,4 +1,4 @@
-CC=g++ -std=c++17
+CXX=g++ -std=c++17
 SRCDIR=src
 OBJDIR=obj
 BINDIR=bin
@@ -8,45 +8,42 @@ OBJS=$(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 DEP=$(wildcard $(DEPDIR)/*.hpp)
 BOOST=-lboost_system -lboost_filesystem
 INC=-I$(DEPDIR)/eigen -I$(DEPDIR)
-FLAGS=-lm -fopenmp -O4 # -ggdb3 -pg
+CXXFLAGS=-lm -fopenmp -O3 # -ggdb3 -pg
+TARGET=$(BINDIR)/main
 
-all: bin/main
+all: $(TARGET)
 
-bin/main: $(OBJS) $(DEP)
+$(TARGET): $(OBJS) $(DEP)
 	@echo "Linking objects into main.exe..."
-	@$(CC) $(INC) $(FLAGS) -o $(BINDIR)/main $(OBJS) $(BOOST)
+	@$(CXX) $(INC) $(CXXFLAGS) -o $@ $(OBJS) $(BOOST)
 
-obj/%.o : src/%.cpp $(DEP)
-	@echo "Creating $(<:src/%.cpp=%) object file..."
-	@$(CC) $(INC) $(FLAGS) -c -o $@ $< $(BOOST)
+$(OBJDIR)/%.o : $(SRCDIR)/%.cpp $(DEP)
+	@echo "Creating $(<:$(SRCDIR)/%.cpp=%) object file..."
+	@$(CXX) $(INC) $(CXXFLAGS) -c -o $@ $< $(BOOST)
 
-.PHONY:clean 
-
+.PHONY: clean
 clean:
-	@rm -rf ./obj/*.o ./bin/*.exe .bin/*.out bin/main
+	@rm -rf ./obj/*.o ./bin/*.exe .bin/*.out $(TARGET)
 
-.PHONY:run 
-
-run : bin/main.out
+.PHONY: run
+run: $(TARGET).out
 	@echo "Executing binary..."
-	@./bin/main.out	
+	@./$(TARGET).out
 
-.PHONY:timerun
-
-timerun : ./bin/main.out	
+.PHONY: timerun
+timerun: $(TARGET).out
 	@echo "Executing a timed binary..."
-	@time ./bin/main.out	
+	@time ./$(TARGET).out
 
-.PHONY:profile
+.PHONY: profile
+profile: $(TARGET).out gmon.out
+	gprof $(TARGET) gmon.out > ./dat/profdata.txt
 
-profile : ./bin/main.out gmon.out
-	gprof ./main.exe gmon.out > ./dat/profdata.txt 
-
-graph : 
+.PHONY: graph
+graph:
 	@echo "Graphing results..."
 	@gnuplot dat/graph_plaq.p
 
-.PHONY:cleanconf
-cleanconf :
-	@rm -rf ./configurations/*.bin 
-	
+.PHONY: cleanconf
+cleanconf:
+	@rm -rf ./configurations/*.bin
