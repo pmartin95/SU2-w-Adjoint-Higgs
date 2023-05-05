@@ -4,7 +4,8 @@ obj/**
 *.txt
 *.dat
 *.png
-includes/docs/.hgeol
+includes/docs/**
+build/**
 output/*.out
 dat/**
 configurations/**
