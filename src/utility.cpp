@@ -32,7 +32,22 @@ bool isHermitian(const matrix &m, double tolerance)
 {
     return verify::equivalent(m, m.adjoint(), tolerance);
 }
+bool isAntiHermitian(const matrix &m) {
+    const double tolerance = 1e-10;
 
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            if (std::abs(m(i, j) + std::conj(m(j, i))) > tolerance) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+bool isTraceless(const matrix &m) {
+    const double tolerance = 1e-10;
+    return std::abs(m.trace()) < tolerance;
+}
 // Function to check if a matrix is an SU(2) matrix
 bool isSU2(const matrix &m, double tolerance)
 {
