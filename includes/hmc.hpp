@@ -13,6 +13,7 @@ void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&
 
 // perform an HMC with t time intervals
 void HMC_warmup(int t);
+matrix averageMomenta(site *plattice1);
 double HMC(int t);
 
 // Copy lattice 1 to lattice 2
@@ -25,7 +26,8 @@ const matrix linkFieldForce(site *lattice1, int site_index, int mu);
 // gauge field staple
 void gaugeFieldStaple(site *lattice1, int site_index, int mu, matrix &staple);
 const matrix gaugeFieldStaple(site *lattice1, int site_index, int mu);
-
+void gaugeFieldUpperStaple(site *lattice1, int site_index, int mu, matrix &Ustaple);
+void gaugeFieldLowerStaple(site *lattice1, int site_index, int mu, matrix &Lstaple);
 // Cayley-Klein version of exponential function
 void expCK(const matrix &m, matrix &expm);
 const matrix expCK(const matrix &m);
@@ -39,3 +41,4 @@ void randomHermitianMatrix(matrix &m);
 // file a lattice with random normally distirbuted Hermitian matrices
 void randomMomentumLattice(site *lattice1);
 matrix antiHermitianTraceless(matrix &m);
+matrix hermitianTraceless(matrix &m);

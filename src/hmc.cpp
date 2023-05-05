@@ -32,7 +32,7 @@ void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&
                 std::cout << current_momenta[i].field[mu] << std::endl;
                 exit(1);
             }
-            next_lattice[i].field[mu] = expCK(-step_size * I * current_momenta[i].field[mu]) * current_lattice[i].field[mu]; // Seems like  Re and + is best so far
+            next_lattice[i].field[mu] = expCK(step_size * I * current_momenta[i].field[mu]) * current_lattice[i].field[mu];
         }
     }
 
@@ -42,7 +42,7 @@ void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&
 void HMC_warmup(int t)
 {
 
-    double t_step = 1.0 / t;
+    double t_step = 1.0 / (double)t;
     site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
     site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
 
@@ -62,20 +62,28 @@ void HMC_warmup(int t)
     updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
     copyLattice(current_lattice, lattice);
-    copyLattice(current_momenta, plattice);
 }
-
+matrix averageMomenta(site *plattice1)
+{
+    matrix sum = matrix::Zero();
+    for (int i = 0; i < lsites; i++)
+    {
+        for (int mu = 0; mu < 4; mu++)
+        {
+            sum += plattice1[i].field[mu];
+        }
+    }
+    return sum / (lsites * 4);
+}
 // perform an HMC with t time intervals
 double HMC(int t)
 {
     double t_step = 1.0 / static_cast<double>(t);
     // Copy lattice  to lattice 1 and 2
-    copyLattice(lattice, lattice1_global);
-    copyLattice(lattice, lattice2_global);
 
     site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
     site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
-
+    copyLattice(lattice, current_lattice);
     // random momenta
     randomMomentumLattice(current_momenta);
     copyLattice(current_momenta, plattice);
@@ -89,6 +97,11 @@ double HMC(int t)
     {
         updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
         updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step);
+        std::cout << "current momentum: " << averageMomenta(current_momenta) << std::endl;
+        std::cout << "next momentum:" << averageMomenta(next_momenta) << std::endl;
+        std::cout << "delta H: " << hamiltonian(current_lattice, current_momenta) - hamiltonian(next_lattice, next_momenta) << std::endl;
+        std::cout << "total momentum: " << totalMomentum(current_momenta) - totalMomentum(next_momenta) << std::endl;
+        std::cout << "wilson action: " << WilsonAction(current_lattice) - WilsonAction(next_lattice) << std::endl;
     }
     updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
     updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
@@ -140,9 +153,10 @@ void linkFieldForce(site *lattice1, int site_index, int mu, matrix &force)
 {
     int jumpNone[4] = {0, 0, 0, 0};
     matrix staple = gaugeFieldStaple(lattice1, site_index, mu);
-    matrix link = callLatticeSite(lattice1, site_index, jumpNone, mu);
-    matrix temp = link * staple;
-    force = beta / 4.0 * antiHermitianTraceless(temp) * I;
+    matrix link = lattice1[site_index].field[mu];
+    matrix temp = I * (link * staple - staple.adjoint() * link.adjoint()); // Does this adjoint need to be here?
+    // force = beta / 4.0 * hermitianTraceless(temp);
+    force = beta / 4.0 * temp;
 }
 const matrix linkFieldForce(site *lattice1, int site_index, int mu)
 {
@@ -171,6 +185,41 @@ void gaugeFieldStaple(site *lattice1, int site_index, int mu, matrix &staple)
         }
     }
 }
+void gaugeFieldUpperStaple(site *lattice1, int site_index, int mu, matrix &Ustaple)
+{
+    Ustaple.setZero();
+    int jumpNone[4] = {0, 0, 0, 0};
+    for (int nu = 0; nu < 4; nu++)
+    {
+        if (nu != mu)
+        {
+            int jump1[4] = {0, 0, 0, 0};
+            int jump2[4] = {0, 0, 0, 0};
+            jump1[mu] = 1;
+            jump2[nu] = 1;
+            Ustaple += callLatticeSite(lattice1, site_index, jump1, nu) * callLatticeSite(lattice1, site_index, jump2, mu).adjoint() * callLatticeSite(lattice1, site_index, jumpNone, nu).adjoint();
+        }
+    }
+}
+
+void gaugeFieldLowerStaple(site *lattice1, int site_index, int mu, matrix &Lstaple)
+{
+    Lstaple.setZero();
+    int jumpNone[4] = {0, 0, 0, 0};
+    for (int nu = 0; nu < 4; nu++)
+    {
+        if (nu != mu)
+        {
+            int jump1[4] = {0, 0, 0, 0};
+            int jump2[4] = {0, 0, 0, 0};
+            jump1[mu] = 1;
+            jump1[nu] = -1;
+            jump2[nu] = -1;
+            Lstaple += callLatticeSite(lattice1, site_index, jump1, nu).adjoint() * callLatticeSite(lattice1, site_index, jump2, mu).adjoint() * callLatticeSite(lattice1, site_index, jump2, nu);
+        }
+    }
+}
+
 const matrix gaugeFieldStaple(site *lattice1, int site_index, int mu)
 {
     matrix staple;
@@ -251,4 +300,12 @@ matrix antiHermitianTraceless(matrix &m)
     antiherm = m - m.adjoint();
 
     return antiherm * 0.5 - matrix::Identity() * 0.25 * (antiherm).trace();
+}
+
+matrix hermitianTraceless(matrix &m)
+{
+    matrix herm;
+    herm = m + m.adjoint();
+
+    return herm * 0.5 - matrix::Identity() * 0.25 * (herm).trace();
 }
