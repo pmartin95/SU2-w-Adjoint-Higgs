@@ -747,6 +747,8 @@ void argumentInput(int argc, char **argv)
             {
                 thermalize = false;
                 std::cout << "Using previous configuration instead of thermalization.\n";
+                //! Add a check to see if the file exists
+
                 pullConfig(confFolder + identifier + ".bin");
             }
         }
@@ -953,4 +955,48 @@ void midSimObservables()
         higgsCorrFile << averageCorrelatorVolume(t) << "\n";
     }
     higgsCorrFile.close();
+
+    std::ofstream actionFile(datFolder + "action" + identifier + ".dat", std::ios::app);
+    actionFile << std::setprecision(16) << std::fixed << std::scientific;
+    actionFile << GeorgiGlashowAction() << std::endl;
+    actionFile.close();
+}
+
+void testMinimize(int argc, char **argv)
+{
+    // Test minimization
+    hotLattice();
+    double T = 1.0;
+    double coolingRate = 0.7;
+    int stepsT = 10;
+    int steps = 10000;
+
+    double actionMin = GeorgiGlashowAction();
+
+    for (int i = 0; i < stepsT; i++)
+    {
+        for (int j = 0; j < steps; j++)
+        {
+            minimize::simulatedAnnealingSweep(T);
+            std::ofstream actionFile(datFolder + "action" + identifier + ".dat", std::ios::app);
+            actionFile << std::setprecision(16) << std::fixed << std::scientific;
+            actionFile << GeorgiGlashowAction() << std::endl;
+            actionFile.close();
+            double higgsAcceptanceRate = static_cast<double>(NacceptHiggs) / static_cast<double>(NacceptHiggs + NrejectHiggs);
+            double linkAcceptanceRate = static_cast<double>(NacceptLink) / static_cast<double>(NacceptLink + NrejectLink);
+            double action = GeorgiGlashowAction();
+            if (action < actionMin)
+            {
+                actionMin = action;
+                pushConfig(confFolder + "min" + identifier + ".bin");
+            }
+            NacceptHiggs = 0;
+            NrejectHiggs = 0;
+            NacceptLink = 0;
+            NrejectLink = 0;
+        }
+        T *= coolingRate;
+    }
+    double c_mass = actionMin / lt + m2 * m2 / 4.0 / lambda * l * l * l;
+    std::cout << "classical mass at m2= " << m2 << " is " << c_mass << std::endl;
 }

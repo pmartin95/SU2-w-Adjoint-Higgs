@@ -17,6 +17,7 @@
 #include "configuration_io.hpp"
 #include "utility.hpp"
 #include "lattice_ops.hpp"
+#include "minimize.hpp"
 #pragma once
 
 void simulation1(int argc, char **argv);
@@ -33,3 +34,4 @@ void boundaryConditionTest(int argc, char **argv);
 void indexTest();
 void simulation5(int argc, char **argv);
 void midSimObservables();
+void testMinimize(int argc, char **argv);
