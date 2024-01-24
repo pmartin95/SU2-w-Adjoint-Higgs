@@ -36,7 +36,7 @@ int iter_count = 0;
 int Naccept = 0, Nreject = 0;
 int NacceptLink = 0, NrejectLink = 0;
 int NacceptHiggs = 0, NrejectHiggs = 0;
-int l = 4, lt = 4, lsites = l * l * l * lt;
+int l = 12, lt = 12, lsites = l * l * l * lt;
 int ldir[4] = {lt, l, l, l};
 bool thermalize = true;
 bool configSteps = true;

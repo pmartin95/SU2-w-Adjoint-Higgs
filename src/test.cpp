@@ -988,7 +988,7 @@ void simulationHMC1(int argc, char **argv)
     if (thermalize)
     {
         hotLattice();
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 30; i++)
         {
             HMC_warmup(20);
         }
@@ -1006,7 +1006,7 @@ void simulationHMC1(int argc, char **argv)
             for (int j = 0; j < sweep_between_obs; j++)
             {
                 // std::cout << WilsonAction(lattice) << std::endl;
-                HMC(1000);
+                std::cout << HMC(20) << std::endl;
                 std::cout << plaquetteAverage() << std::endl;
             }
             std::cout << "Acceptance rate: " << static_cast<double>(Naccept) / static_cast<double>(Naccept + Nreject) << std::endl;

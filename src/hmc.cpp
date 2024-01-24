@@ -1,68 +1,75 @@
 #include "hmc.hpp"
 
 // update lattice momenta of lattice 1
-void updateLatticeMomenta(site *&current_momenta, site *&current_lattice, site *&next_momenta, double step_size)
+void updateLatticeMomenta(site **current_momenta, site **current_lattice, site **next_momenta, double step_size)
 {
     for (int i = 0; i < lsites; i++)
     {
         for (int mu = 0; mu < 4; mu++)
         {
             matrix force;
-            linkFieldForce(current_lattice, i, mu, force);
+            linkFieldForce(*current_lattice, i, mu, force);
             if (!isHermitian(force))
             {
                 std::cout << "force is not Hermitian" << std::endl;
                 exit(1);
             }
-            next_momenta[i].field[mu] = current_momenta[i].field[mu] - step_size * force;
+            (*next_momenta)[i].field[mu] = (*current_momenta)[i].field[mu] - step_size * force;
         }
     }
-    std::swap(current_momenta, next_momenta);
+    std::swap(*current_momenta, *next_momenta);
 }
+
 // update lattice fields of lattice 1
-void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&next_lattice, double step_size)
+void updateLatticeFields(site **current_lattice, site **current_momenta, site **next_lattice, double step_size)
 {
     for (int i = 0; i < lsites; i++)
     {
         for (int mu = 0; mu < 4; mu++)
         {
-            if (!isHermitian(current_momenta[i].field[mu]))
+            if (!isHermitian((*current_momenta)[i].field[mu]))
             {
                 std::cout << "Momentum is not Hermitian" << std::endl;
-                std::cout << current_momenta[i].field[mu] << std::endl;
+                std::cout << (*current_momenta)[i].field[mu] << std::endl;
                 exit(1);
             }
-            next_lattice[i].field[mu] = expCK(step_size * I * current_momenta[i].field[mu]) * current_lattice[i].field[mu];
+            (*next_lattice)[i].field[mu] = expCK(step_size * I * (*current_momenta)[i].field[mu]) * (*current_lattice)[i].field[mu];
         }
     }
-
-    std::swap(current_lattice, next_lattice);
+    std::swap(*current_lattice, *next_lattice);
 }
 
 void HMC_warmup(int t)
 {
-
-    double t_step = 1.0 / (double)t;
-    site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
-    site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
+    double t_step = 1.0 / static_cast<double>(t);
+    site *current_lattice = lattice1_global;
+    site *next_lattice = lattice2_global;
+    site *current_momenta = plattice1_global;
+    site *next_momenta = plattice2_global;
 
     randomMomentumLattice(plattice);
     copyLattice(lattice, current_lattice);
-    copyLattice(plattice, current_momenta);
+    copyLattice(lattice, next_lattice);
 
-    // random momenta
+    copyLattice(plattice, current_momenta);
+    copyLattice(plattice, next_momenta);
+
     // Update lattice momenta
-    updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
+    updateLatticeMomenta(&current_momenta, &current_lattice, &next_momenta, t_step / 2.0);
+
     // Update lattice fields
     for (int i = 0; i < t - 1; i++)
     {
-        updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
-        updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step);
+        updateLatticeFields(&current_lattice, &current_momenta, &next_lattice, t_step);
+        updateLatticeMomenta(&current_momenta, &current_lattice, &next_momenta, t_step);
     }
-    updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
-    updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
+
+    updateLatticeFields(&current_lattice, &current_momenta, &next_lattice, t_step);
+    updateLatticeMomenta(&current_momenta, &current_lattice, &next_momenta, t_step / 2.0);
+
     copyLattice(current_lattice, lattice);
 }
+
 matrix averageMomenta(site *plattice1)
 {
     matrix sum = matrix::Zero();
@@ -79,38 +86,35 @@ matrix averageMomenta(site *plattice1)
 double HMC(int t)
 {
     double t_step = 1.0 / static_cast<double>(t);
-    // Copy lattice  to lattice 1 and 2
 
-    site *current_lattice = lattice1_global, *next_lattice = lattice2_global;
-    site *current_momenta = plattice1_global, *next_momenta = plattice2_global;
+    site *current_lattice = lattice1_global;
+    site *next_lattice = lattice2_global;
+    site *current_momenta = plattice1_global;
+    site *next_momenta = plattice2_global;
+
     copyLattice(lattice, current_lattice);
-    // random momenta
+    copyLattice(lattice, next_lattice);
+
     randomMomentumLattice(current_momenta);
     copyLattice(current_momenta, plattice);
+    copyLattice(current_momenta, next_momenta);
 
-    // Update lattice momenta
+    updateLatticeMomenta(&current_momenta, &current_lattice, &next_momenta, t_step / 2.0);
+    double Htemp = hamiltonian(current_lattice, current_momenta);
 
-    updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
-
-    // Update lattice fields
-    for (int i = 0; i < t - 1; i++)
-    {
-        updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
-        updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step);
-        std::cout << "current momentum: " << averageMomenta(current_momenta) << std::endl;
-        std::cout << "next momentum:" << averageMomenta(next_momenta) << std::endl;
-        std::cout << "delta H: " << hamiltonian(current_lattice, current_momenta) - hamiltonian(next_lattice, next_momenta) << std::endl;
-        std::cout << "total momentum: " << totalMomentum(current_momenta) - totalMomentum(next_momenta) << std::endl;
-        std::cout << "wilson action: " << WilsonAction(current_lattice) - WilsonAction(next_lattice) << std::endl;
-    }
-    updateLatticeFields(current_lattice, current_momenta, next_lattice, t_step);
-    updateLatticeMomenta(current_momenta, current_lattice, next_momenta, t_step / 2.0);
-    // Calculate Hamiltonian
     double H1 = hamiltonian(lattice, plattice);
     double H2 = hamiltonian(current_lattice, current_momenta);
-    std::cout << "Hdiff: " << H2 - H1 << std::endl;
 
-    // Accept or reject
+    for (int i = 0; i < t - 1; i++)
+    {
+        updateLatticeFields(&current_lattice, &current_momenta, &next_lattice, t_step);
+        updateLatticeMomenta(&current_momenta, &current_lattice, &next_momenta, t_step);
+        H2 = hamiltonian(current_lattice, current_momenta);
+    }
+
+    updateLatticeFields(&current_lattice, &current_momenta, &next_lattice, t_step);
+    updateLatticeMomenta(&current_momenta, &current_lattice, &next_momenta, t_step / 2.0);
+
     if (H2 <= H1)
     {
         copyLattice(current_lattice, lattice);
@@ -154,7 +158,8 @@ void linkFieldForce(site *lattice1, int site_index, int mu, matrix &force)
     int jumpNone[4] = {0, 0, 0, 0};
     matrix staple = gaugeFieldStaple(lattice1, site_index, mu);
     matrix link = lattice1[site_index].field[mu];
-    matrix temp = I * (link * staple - staple.adjoint() * link.adjoint()); // Does this adjoint need to be here?
+    matrix link_staple = link * staple;
+    matrix temp = I * (link_staple - link_staple.adjoint().eval()); // Does this adjoint need to be here?
     // force = beta / 4.0 * hermitianTraceless(temp);
     force = beta / 4.0 * temp;
 }

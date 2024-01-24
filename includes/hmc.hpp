@@ -7,9 +7,9 @@
 #include "observables.hpp"
 #pragma once
 // update lattice momenta of lattice 1
-void updateLatticeMomenta(site *&current_momenta, site *&current_lattice, site *&next_momenta, double step_size);
+void updateLatticeMomenta(site **current_momenta, site **current_lattice, site **next_momenta, double step_size);
 // update lattice fields of lattice 1
-void updateLatticeFields(site *&current_lattice, site *&current_momenta, site *&next_lattice, double step_size);
+void updateLatticeFields(site **current_lattice, site **current_momenta, site **next_lattice, double step_size);
 
 // perform an HMC with t time intervals
 void HMC_warmup(int t);
