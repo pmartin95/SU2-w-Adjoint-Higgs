@@ -1,14 +1,15 @@
 #include "configuration_io.hpp"
 #include "global_decl.hpp"
 #include <fstream>
+const int MATRICES_PER_SITE = 5;
+const int DOUBLES_PER_MATRIX = 8;
 
 int pushConfig(std::string filename)
 {
     std::vector<double> v;
-    std::ofstream conf;
-    for (int site_index = 0; site_index < lsites; site_index++)
+    v.reserve(lsites * MATRICES_PER_SITE * DOUBLES_PER_MATRIX) for (int site_index = 0; site_index < lsites; site_index++)
     {
-        for (int dir = 0; dir < 5; dir++)
+        for (int dir = 0; dir < MATRICES_PER_SITE; dir++)
         {
             v.push_back(lattice[site_index].field[dir](0, 0).real());
             v.push_back(lattice[site_index].field[dir](0, 0).imag());
@@ -20,21 +21,30 @@ int pushConfig(std::string filename)
             v.push_back(lattice[site_index].field[dir](1, 1).imag());
         }
     }
-    conf.open(filename, std::ios::binary);
-    conf.write(reinterpret_cast<const char *>(&v[0]), v.size() * sizeof(v[0]));
-    conf.close();
+
+    std::ofstream conf(filename, std::ios::binary);
+    if (!conf)
+    {
+        return -1;
+    }
+    // conf.write(reinterpret_cast<const char *>(&v[0]), v.size() * sizeof(v[0])); old way of doing it
+    conf.write(reinterpret_cast<const char *>(v.data()), v.size() * sizeof(v[0]));
     return 0;
 }
 int pullConfig(std::string filename)
 {
     int i, j, k;
-    int doublesPerSite = 5 /* matrices per site */ * 8 /*doubles per matrix*/;
-    std::ifstream conf;
-    std::vector<double> v(lsites * doublesPerSite);
+    int doublesPerSite = MATRICES_PER_SITE * DOUBLES_PER_MATRIX;
 
+    std::vector<double> v(lsites * doublesPerSite);
+    std::ifstream conf;
     conf.open(filename, std::ios::binary);
-    conf.read(reinterpret_cast<char *>(&v[0]), lsites * doublesPerSite * sizeof(double));
-    conf.close();
+    if (!conf)
+    {
+        return -1;
+    }
+    // conf.read(reinterpret_cast<char *>(&v[0]), lsites * doublesPerSite * sizeof(double)); // old way
+    conf.read(reinterpret_cast<char *>(v.data()), lsites * doublesPerSite * sizeof(double));
 
     for (int site_index = 0; site_index < lsites; site_index++)
     {
