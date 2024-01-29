@@ -7,7 +7,8 @@ const int DOUBLES_PER_MATRIX = 8;
 int pushConfig(std::string filename)
 {
     std::vector<double> v;
-    v.reserve(lsites * MATRICES_PER_SITE * DOUBLES_PER_MATRIX) for (int site_index = 0; site_index < lsites; site_index++)
+    v.reserve(lsites * MATRICES_PER_SITE * DOUBLES_PER_MATRIX);
+    for (int site_index = 0; site_index < lsites; site_index++)
     {
         for (int dir = 0; dir < MATRICES_PER_SITE; dir++)
         {
