@@ -1,7 +1,9 @@
 .vscode/**
 bin/**
 obj/**
-*.txt
+# *.txt
+python_scripts/**/*.txt
+misc/**/*.txt
 *.dat
 *.png
 includes/docs/**
