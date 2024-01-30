@@ -3,7 +3,7 @@ bin/**
 obj/**
 # *.txt
 python_scripts/**/*.txt
-misc/**/*.txt
+misc/**
 *.dat
 *.png
 includes/docs/**
