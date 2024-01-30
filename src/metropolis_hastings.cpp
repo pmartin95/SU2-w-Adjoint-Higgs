@@ -1,61 +1,61 @@
-#include "global_decl.hpp"
+#include "simulation.hpp"
 #include "metropolis-hastings.hpp"
 #include "action.hpp"
 #include <iostream>
 
-void metropolisHastingsSweep()
+void metropolisHastingsSweep(std::unique_ptr<Simulation> &sim)
 {
     matrix tmp;
     double actionDiff;
-    for (int site_index = 0; site_index < lsites; site_index++)
+    for (int site_index = 0; site_index < sim->lsites; site_index++)
     {
         for (int dir = 0; dir < 4; dir++)
-            evolveLink(site_index, dir);
-        evolveHiggs(site_index);
+            evolveLink(sim, site_index, dir);
+        evolveHiggs(sim, site_index);
     }
 }
 
-void evolveLink(int site_index, int dir)
+void evolveLink(std::unique_ptr<Simulation> &sim, int site_index, int dir)
 {
     matrix tmp;
     double actionDiff;
-    actionDiff = GeorgiGlashowPartialActionLink(site_index, dir);
-    tmp = lattice[site_index].field[dir];
-    generateRandomSU2Rot(lattice[site_index].field[dir]);
-    actionDiff -= GeorgiGlashowPartialActionLink(site_index, dir); // actionDiff = -Delta S
+    actionDiff = GeorgiGlashowPartialActionLink(sim, site_index, dir);
+    tmp = sim->lattice[site_index].field[dir];
+    generateRandomSU2Rot(sim->lattice[site_index].field[dir]);
+    actionDiff -= GeorgiGlashowPartialActionLink(sim, site_index, dir); // actionDiff = -Delta S
 
     actionDiff = std::exp(actionDiff);
-    if (actionDiff < gen(rng))
+    if (actionDiff < sim->gen(sim->rng))
     {
-        lattice[site_index].field[dir] = tmp;
-        ++Nreject;
-        ++NrejectLink;
+        sim->lattice[site_index].field[dir] = tmp;
+        sim->Nreject++;
+        sim->NrejectLink++;
     }
     else
     {
-        ++Naccept;
-        ++NacceptLink;
+        sim->Naccept++;
+        sim->NacceptLink++;
     }
 }
-void evolveHiggs(int site_index)
+void evolveHiggs(std::unique_ptr<Simulation> &sim, int site_index)
 {
     matrix tmp;
     double actionDiff;
-    actionDiff = GeorgiGlashowPartialActionHiggs(site_index);
-    tmp = lattice[site_index].field[4];
-    stepTracelessHermitian(lattice[site_index].field[4]);
-    actionDiff -= GeorgiGlashowPartialActionHiggs(site_index); // actionDiff = -Delta S
+    actionDiff = GeorgiGlashowPartialActionHiggs(sim, site_index);
+    tmp = sim->lattice[site_index].field[4];
+    stepTracelessHermitian(sim->lattice[site_index].field[4]);
+    actionDiff -= GeorgiGlashowPartialActionHiggs(sim, site_index); // actionDiff = -Delta S
 
     actionDiff = std::exp(actionDiff);
-    if (actionDiff < gen(rng))
+    if (actionDiff < sim->gen(sim->rng))
     {
-        lattice[site_index].field[4] = tmp;
-        ++Nreject;
-        ++NrejectHiggs;
+        sim->lattice[site_index].field[4] = tmp;
+        sim->Nreject++;
+        sim->NrejectHiggs++;
     }
     else
     {
-        ++Naccept;
-        ++NacceptHiggs;
+        sim->Naccept++;
+        sim->NacceptHiggs++;
     }
 }

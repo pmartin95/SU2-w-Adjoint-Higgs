@@ -1,13 +1,14 @@
-#include "global_decl.hpp"
+#include "simulation.hpp"
+#include <memory>
 #pragma once
-double WilsonAction();
-double WilsonActionPartial(int site_index, int mu);
-double GeorgiGlashowHiggsPotential();
-double GeorgiGlashowHiggsPotentialSite(int site_index);
-double GeorgiGlashowHiggsKinetic();
-double GeorgiGlashowHiggsKineticSite(int site_index);
-double GeorgiGlashowHiggsKineticSiteOneLink(int site_index, int dir);
-double GeorgiGlashowAction();
-double GeorgiGlashowPartialActionLink(int site_index, int dir);
-double GeorgiGlashowPartialActionHiggs(int site_index);
-double HiggsMixedTerm(int site_index, int dir);
+double WilsonAction(std::unique_ptr<Simulation> &sim);
+double WilsonActionPartial(std::unique_ptr<Simulation> &sim, int site_index, int mu);
+double GeorgiGlashowHiggsPotential(std::unique_ptr<Simulation> &sim);
+double GeorgiGlashowHiggsPotentialSite(std::unique_ptr<Simulation> &sim, int site_index);
+double GeorgiGlashowHiggsKinetic(std::unique_ptr<Simulation> &sim);
+double GeorgiGlashowHiggsKineticSite(std::unique_ptr<Simulation> &sim, int site_index);
+double GeorgiGlashowHiggsKineticSiteOneLink(std::unique_ptr<Simulation> &sim, int site_index, int dir);
+double GeorgiGlashowAction(std::unique_ptr<Simulation> &sim);
+double GeorgiGlashowPartialActionLink(std::unique_ptr<Simulation> &sim, int site_index, int dir);
+double GeorgiGlashowPartialActionHiggs(std::unique_ptr<Simulation> &sim, int site_index);
+double HiggsMixedTerm(std::unique_ptr<Simulation>& sim,int site_index, int dir);

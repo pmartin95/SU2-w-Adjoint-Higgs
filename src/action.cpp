@@ -1,24 +1,26 @@
 #include "action.hpp"
+#include "Simulation.hpp"
 #include "observables.hpp"
 #include "lattice_ops.hpp"
+#include <memory>
 
-double WilsonAction()
+double WilsonAction(std::unique_ptr<Simulation> &sim)
 {
     double accumulator = 0.0;
     int jumpNone[4] = {0};
-    for (int site_index = 0; site_index < lsites; site_index++)
+    for (int site_index = 0; site_index < sim->lsites; site_index++)
     {
         for (int nu = 0; nu < 4; nu++)
         {
             for (int mu = 0; mu < nu; mu++)
             {
-                accumulator += (1.0 - plaquette(site_index, jumpNone, mu, nu));
+                accumulator += (1.0 - plaquette(sim, site_index, jumpNone, mu, nu));
             }
         }
     }
-    return beta * accumulator;
+    return sim->beta * accumulator;
 }
-double WilsonActionPartial(int site_index, int mu)
+double WilsonActionPartial(std::unique_ptr<Simulation> &sim, int site_index, int mu)
 {
     double accumulator = 0.0;
     int jumpNone[4] = {0};
@@ -27,99 +29,99 @@ double WilsonActionPartial(int site_index, int mu)
         if (mu == nu)
             continue;
         int x[4];
-        siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-        x[nu] = (x[nu] - 1 + ldir[nu]) % ldir[nu];
-        accumulator += plaquette(site_index, jumpNone, mu, nu);
-        accumulator += plaquette(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), jumpNone, mu, nu);
+        siteIndexToCoordinates(sim, site_index, x[0], x[1], x[2], x[3]);
+        x[nu] = (x[nu] - 1 + sim->ldir[nu]) % sim->ldir[nu];
+        accumulator += plaquette(sim, site_index, jumpNone, mu, nu);
+        accumulator += plaquette(sim, coordinatesToSiteIndex(sim, x[0], x[1], x[2], x[3]), jumpNone, mu, nu);
     }
-    return -beta * accumulator;
+    return -sim->beta * accumulator;
 }
 
-double GeorgiGlashowHiggsPotential()
+double GeorgiGlashowHiggsPotential(std::unique_ptr<Simulation> &sim)
 {
     double accumulatorLambda = 0.0;
     double accumulatorm2 = 0.0;
     double higgsSquare;
     matrix tmp;
 
-    for (int site_index = 0; site_index < lsites; site_index++)
+    for (int site_index = 0; site_index < sim->lsites; site_index++)
     {
-        tmp = lattice[site_index].field[4];
+        tmp = sim->lattice[site_index].field[4];
         higgsSquare = (tmp * tmp).trace().real();
         accumulatorLambda += higgsSquare * higgsSquare;
         accumulatorm2 += higgsSquare;
     }
-    return m2 * accumulatorm2 + lambda * accumulatorLambda;
+    return sim->m2 * accumulatorm2 + sim->lambda * accumulatorLambda;
 }
 
-double GeorgiGlashowHiggsPotentialSite(int site_index)
+double GeorgiGlashowHiggsPotentialSite(std::unique_ptr<Simulation> &sim, int site_index)
 {
-    double tmp = (lattice[site_index].field[4] * lattice[site_index].field[4]).trace().real();
-    return tmp * tmp * lambda + tmp * m2;
+    double tmp = (sim->lattice[site_index].field[4] * sim->lattice[site_index].field[4]).trace().real();
+    return tmp * tmp * sim->lambda + tmp * sim->m2;
 }
 
 //! Investigate this term
-double GeorgiGlashowHiggsKinetic()
+double GeorgiGlashowHiggsKinetic(std::unique_ptr<Simulation> &sim)
 {
     double accumulator = 0.0;
     matrix tmp;
-    for (int site_index = 0; site_index < lsites; site_index++)
+    for (int site_index = 0; site_index < sim->lsites; site_index++)
     {
-        tmp = lattice[site_index].field[4];
+        tmp = sim->lattice[site_index].field[4];
         accumulator += 4.0 * (tmp * tmp).trace().real();
         for (int dir = 0; dir < 4; dir++)
         {
-            accumulator -= HiggsMixedTerm(site_index, dir);
+            accumulator -= HiggsMixedTerm(sim, site_index, dir);
         }
     }
-    return 2.0 * kappa * accumulator;
+    return 2.0 * sim->kappa * accumulator;
 }
 //! Investigate this term
-double GeorgiGlashowHiggsKineticSite(int site_index)
+double GeorgiGlashowHiggsKineticSite(std::unique_ptr<Simulation> &sim, int site_index)
 {
     double accumulator;
-    matrix tmp = lattice[site_index].field[4];
+    matrix tmp = sim->lattice[site_index].field[4];
     accumulator = 4.0 * (tmp * tmp).trace().real();
 
     for (int dir = 0; dir < 4; dir++)
     {
         int x[4];
-        siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-        x[dir] = (x[dir] - 1 + ldir[dir]) % ldir[dir];
-        accumulator -= HiggsMixedTerm(site_index, dir);
-        accumulator -= HiggsMixedTerm(coordinatesToSiteIndex(x[0], x[1], x[2], x[3]), dir);
+        siteIndexToCoordinates(sim, site_index, x[0], x[1], x[2], x[3]);
+        x[dir] = (x[dir] - 1 + sim->ldir[dir]) % sim->ldir[dir]; //! Wait a seconsd, should this be here?
+        accumulator -= HiggsMixedTerm(sim, site_index, dir);
+        accumulator -= HiggsMixedTerm(sim, coordinatesToSiteIndex(sim, x[0], x[1], x[2], x[3]), dir);
     }
-    return 2.0 * kappa * accumulator;
+    return 2.0 * sim->kappa * accumulator;
 }
 //! Investigate this term
-double GeorgiGlashowHiggsKineticSiteOneLink(int site_index, int dir)
+double GeorgiGlashowHiggsKineticSiteOneLink(std::unique_ptr<Simulation> &sim, int site_index, int dir)
 {
-    return -2.0 * kappa * HiggsMixedTerm(site_index, dir);
+    return -2.0 * sim->kappa * HiggsMixedTerm(sim, site_index, dir);
 }
-double GeorgiGlashowAction()
+double GeorgiGlashowAction(std::unique_ptr<Simulation> &sim)
 {
-    return WilsonAction() + GeorgiGlashowHiggsPotential() + GeorgiGlashowHiggsKinetic();
+    return WilsonAction(sim) + GeorgiGlashowHiggsPotential(sim) + GeorgiGlashowHiggsKinetic(sim);
 }
 
-double GeorgiGlashowPartialActionLink(int site_index, int dir)
+double GeorgiGlashowPartialActionLink(std::unique_ptr<Simulation> &sim, int site_index, int dir)
 {
-    return WilsonActionPartial(site_index, dir) + GeorgiGlashowHiggsKineticSiteOneLink(site_index, dir);
+    return WilsonActionPartial(sim, site_index, dir) + GeorgiGlashowHiggsKineticSiteOneLink(sim, site_index, dir);
 }
-double GeorgiGlashowPartialActionHiggs(int site_index)
+double GeorgiGlashowPartialActionHiggs(std::unique_ptr<Simulation> &sim, int site_index)
 {
-    return GeorgiGlashowHiggsKineticSite(site_index) + GeorgiGlashowHiggsPotentialSite(site_index);
+    return GeorgiGlashowHiggsKineticSite(sim, site_index) + GeorgiGlashowHiggsPotentialSite(sim, site_index);
 }
 //! Investigate this term
-double HiggsMixedTerm(int site_index, int dir) // dir = mu,  Tr( \Phi(x) U_{\mu}(x)  \Phi(x+\mu)  U_{\mu}^{\adjoint}(x) )
+double HiggsMixedTerm(std::unique_ptr<Simulation> &sim, int site_index, int dir) // dir = mu,  Tr( \Phi(x) U_{\mu}(x)  \Phi(x+\mu)  U_{\mu}^{\adjoint}(x) )
 {
     int x[4], jump_index;
 
-    siteIndexToCoordinates(site_index, x[0], x[1], x[2], x[3]);
-    x[dir] = (x[dir] + 1) % ldir[dir];
-    jump_index = coordinatesToSiteIndex(x[0], x[1], x[2], x[3]);
+    siteIndexToCoordinates(sim, site_index, x[0], x[1], x[2], x[3]);
+    x[dir] = (x[dir] + 1) % sim->ldir[dir];
+    jump_index = coordinatesToSiteIndex(sim, x[0], x[1], x[2], x[3]);
     matrix higgsX, higgsXpMU, link;
-    higgsX = lattice[site_index].field[4];
-    link = lattice[site_index].field[dir];
-    higgsXpMU = lattice[jump_index].field[4];
+    higgsX = sim->lattice[site_index].field[4];
+    link = sim->lattice[site_index].field[dir];
+    higgsXpMU = sim->lattice[jump_index].field[4];
     return (higgsX * link * higgsXpMU * link.adjoint()).trace().real();
 }

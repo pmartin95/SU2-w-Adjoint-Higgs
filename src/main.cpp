@@ -13,7 +13,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 
-#include "global_decl.hpp"
+#include "simulation.hpp"
 #include "observables.hpp"
 #include "metropolis-hastings.hpp"
 #include "statistics.hpp"

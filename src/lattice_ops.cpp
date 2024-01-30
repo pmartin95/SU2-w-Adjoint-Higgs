@@ -3,7 +3,7 @@
 #include <iostream>
 #include <complex>
 
-int coordinatesToSiteIndex(const simulation *sim, int t, int x, int y, int z)
+int coordinatesToSiteIndex(std::unique_ptr<Simulation> &sim, int t, int x, int y, int z)
 {
     int site_index = t;
     site_index = site_index * sim->l + x;
@@ -13,12 +13,12 @@ int coordinatesToSiteIndex(const simulation *sim, int t, int x, int y, int z)
     return site_index;
 }
 
-int coordinatesToSiteIndex(const simulation *sim, int (&r)[4])
+int coordinatesToSiteIndex(std::unique_ptr<Simulation> &sim, int (&r)[4])
 {
     return coordinatesToSiteIndex(sim, r[0], r[1], r[2], r[3]);
 }
 
-void siteIndexToCoordinates(const simulation *sim, int site_index, int &t, int &x, int &y, int &z)
+void siteIndexToCoordinates(std::unique_ptr<Simulation> &sim, int site_index, int &t, int &x, int &y, int &z)
 {
     int temp = site_index;
     z = temp % sim->l;
@@ -29,12 +29,12 @@ void siteIndexToCoordinates(const simulation *sim, int site_index, int &t, int &
     t = temp / sim->l;
 }
 
-void siteIndexToCoordinates(const simulation *sim, int site_index, int (&r)[4])
+void siteIndexToCoordinates(std::unique_ptr<Simulation> &sim, int site_index, int (&r)[4])
 {
     siteIndexToCoordinates(sim, site_index, r[0], r[1], r[2], r[3]);
 }
 
-int siteJump(const simulation *sim, int site_index, int jump_dir, int jump_len, int &num_overlaps) // Returns new site index
+int siteJump(std::unique_ptr<Simulation> &sim, int site_index, int jump_dir, int jump_len, int &num_overlaps) // Returns new site index
 {
     int r[4];
     num_overlaps = 0;
@@ -53,7 +53,7 @@ int siteJump(const simulation *sim, int site_index, int jump_dir, int jump_len, 
     return coordinatesToSiteIndex(sim, r);
 }
 
-int siteJump(const simulation *sim, int site_index, int (&jump_len)[4], int (&num_overlaps)[4]) // Returns new site index
+int siteJump(std::unique_ptr<Simulation> &sim, int site_index, int (&jump_len)[4], int (&num_overlaps)[4]) // Returns new site index
 {
     int r[4];
 
@@ -76,9 +76,9 @@ int siteJump(const simulation *sim, int site_index, int (&jump_len)[4], int (&nu
 
     return coordinatesToSiteIndex(sim, r);
 }
-void hotLattice(const simulation *sim)
+void hotLattice(std::unique_ptr<Simulation> &sim)
 {
-    for (int site_index = 0; site_index < lsites; site_index++)
+    for (int site_index = 0; site_index < sim->lsites; site_index++)
     {
         for (int dir = 0; dir < 4; dir++)
         {
@@ -90,33 +90,33 @@ void hotLattice(const simulation *sim)
     }
 }
 
-void coldLattice(const simulation *sim)
+void coldLattice(std::unique_ptr<Simulation> &sim)
 {
-    for (int site_index = 0; site_index < lsites; site_index++)
+    for (int site_index = 0; site_index < sim->lsites; site_index++)
     {
         for (int dir = 0; dir < 4; dir++)
         {
             sim->lattice[site_index].field[dir] = matrix::Identity();
         }
-        sim->lattice[site_index].field[4] << (m2 / (2.0 * lambda)), 0.0, 0.0, -(m2 / (2.0 * lambda));
+        sim->lattice[site_index].field[4] << (sim->m2 / (2.0 * sim->lambda)), 0.0, 0.0, -(sim->m2 / (2.0 * sim->lambda));
     }
 }
 
 // You should rewrite variable names to make it more apparent which is being used, dir, mat_num, etc
 //! call by reference function to pull field from lattice site and do boundary conditions
-void callLatticeSite(const simulation *sim, matrix &m, int ref_site, int (&jump)[4], int dir)
+void callLatticeSite(std::unique_ptr<Simulation> &sim, matrix &m, int ref_site, int (&jump)[4], int dir)
 {
     int num_twists[4];
-    int new_site = siteJump(const simulation *sim, ref_site, jump, num_twists);
+    int new_site = siteJump(sim, ref_site, jump, num_twists);
     m = sim->lattice[new_site].field[dir];
     for (int i = 0; i < 4; i++)
     {
-        bc(m, dir, i, num_twists[i]);
+        sim->bc( m, dir, i, num_twists[i]);
     }
 }
 
 // return copy of field from lattice site and do boundary conditions
-matrix callLatticeSite(const simulation *sim, int ref_site, int (&jump)[4], int dir)
+matrix callLatticeSite(std::unique_ptr<Simulation> &sim, int ref_site, int (&jump)[4], int dir)
 {
     matrix m;
     callLatticeSite(sim, m, ref_site, jump, dir);

@@ -1,4 +1,5 @@
-#include "global_decl.hpp"
+#include "simulation.hpp"
+#include <memory>
 #pragma once
 void generateRandomSU2(matrix &m);
 void generateRandomSU2Rot(matrix &m);

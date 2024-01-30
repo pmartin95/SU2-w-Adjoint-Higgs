@@ -4,7 +4,7 @@
 #include <random>
 #include <complex>
 #include <string>
-
+#include <memory>
 typedef Eigen::Matrix<std::complex<double>, 2, 2> matrix;
 typedef struct site
 {
@@ -82,21 +82,21 @@ public:
     void setBcName(const std::string &bcName);
     void setIdentifier(const std::string &identifier);
 
-private:
-    std::vector<site>;
+    std::vector<site> lattice;
     boundary_condition bc;
 
     double beta, lambda, m2, kappa;
     int MAX_ITER, iter_count, Naccept, Nreject, NacceptLink, NrejectLink, NacceptHiggs, NrejectHiggs;
     int l, lt, lsites, ldir[4];
     bool thermalize, configSteps;
-    bool configSteps;
-    const static std::complex<double> I = std::complex(0.0, 1.0);
+    constexpr static std::complex<double> I = std::complex(0.0, 1.0);
     double rot_size, step_size_higgs;
     std::mt19937 rng;
-    std::uniform_real_distribution<double> gen;
-    std::normal_distribution<double> gen_normal;
+    std::uniform_real_distribution<double> gen = std::uniform_real_distribution<double>(0.0, 1.0);
+    std::normal_distribution<double> gen_normal = std::normal_distribution<double>(0.0, 1.0);
     std::string datFolder, confFolder, bcName, identifier;
+
+private:
 };
 
 // You may also want to define the constructor and destructor where you initialize and clean up resources
