@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-mkdir -p bin obj dat configurations
+mkdir -p build obj dat configurations
